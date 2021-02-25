@@ -1,74 +1,20 @@
 local matrix = {}
 
-function matrix.add( mtx1, mtx2 )
-	local mtx = {}
+function matrix.multiplyVector(vec3, mat4x4)
+    local o = {}
+    
+    o.X = vec3.X * mat4x4[1][1] + vec3.Y * mat4x4[2][1] + vec3.Z * mat4x4[3][1] * mat4x4[4][1]
+    o.Y = vec3.X * mat4x4[1][2] + vec3.Y * mat4x4[2][2] + vec3.Z * mat4x4[3][2] * mat4x4[4][2]
+    o.Z = vec3.X * mat4x4[1][3] + vec3.Y * mat4x4[2][3] + vec3.Z * mat4x4[3][3] * mat4x4[4][3]
+    local W = vec3.X * mat4x4[1][4] + vec3.Y * mat4x4[2][4] + vec3.Z * mat4x4[3][4] + mat4x4[4][4]
 
-	for i = 1, #mtx1 
-	do
-		local mtx3 = {}
-		mtx[i] = mtx3
-		for j = 1, #mtx1[1] 
-		do
-			mtx3[j] = mtx1[i][j] + mtx2[i][j]
-		end
-	end
-	return mtx
-end
+    if W ~= 0.0 then
+        o.X = o.X / W
+        o.Y = o.Y / W
+        o.Z = o.Z / W
+    end
 
-function matrix.multiply(mtx1, mtx2)
-	local mtx = {}
-
-	for i = 1, #mtx1, 1
-    do
-		mtx[i] = {}
-		for j = 1, #mtx2[1], 1
-        do
-			local newValue = mtx1[i][1] * mtx2[1][j]
-			for n = 2, #mtx1[1], 1
-            do
-				newValue = newValue + mtx1[i][n] * mtx2[n][j]
-			end
-			mtx[i][j] = newValue
-		end
-	end
-
-	return mtx
-end
-
-function matrix.rotationX(angle)
-	mtx = {
-		{1, 0, 0},
-		{0, math.cos(angle), -math.sin(angle), 0},
-		{0, math.sin(angle), math.cos(angle)}
-	}
-	return mtx
-end
-
-function matrix.rotationY(angle)
-	mtx = {
-		{math.cos(angle), 0, math.sin(angle)},
-		{0, 1, 0},
-		{-math.sin(angle), 0, math.cos(angle)}
-	}
-	return mtx
-end
-
-function matrix.rotationZ(angle)
-	mtx = {
-		{math.cos(angle), -math.sin(angle), 0},
-		{math.sin(angle), math.cos(angle), 0},
-		{0, 0, 1}
-	}
-	return mtx
-end
-
-function matrix.perspective(depth, point)
-	local z = 1 / (depth - point[3][1])
-    local projection = {
-        {z, 0, 0},
-        {0, z, 0}
-    }
-	return projection
+    return o
 end
 
 return matrix
