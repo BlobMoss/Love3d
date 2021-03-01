@@ -1,259 +1,140 @@
+local vector = require "vector"
 local matrix = require "matrix"
-
---Constructors?
-function vector3(X, Y, Z)
-    return {
-        ["X"] = X,
-        ["Y"] = Y,
-        ["Z"] = Z
-    }
-end
-
-function emptyMatrix4x4()
-    return {
-        { 0.0, 0.0, 0.0, 0.0 },
-        { 0.0, 0.0, 0.0, 0.0 },
-        { 0.0, 0.0, 0.0, 0.0 },
-        { 0.0, 0.0, 0.0, 0.0 }
-    }
-end
-
---Projection matrix
-projMat = emptyMatrix4x4()
-
---Rotation matrices
-rotMatX = emptyMatrix4x4()
-rotMatY = emptyMatrix4x4()
-rotMatZ = emptyMatrix4x4()
-
-bonk = {}
-
-angle = 0.0
-
-cameraPosition = vector3(0, 0, 0)
+local content = require "content"
 
 --Functions for copying tables by value rather than by reference
-function copyVector3(vec3)
+--Why does lua work like this? I do not know
+function copyVector3(v)
     return { 
-        ["X"] = vec3.X, 
-        ["Y"] = vec3.Y, 
-        ["Z"] = vec3.Z 
+        ["X"] = v.X, 
+        ["Y"] = v.Y, 
+        ["Z"] = v.Z,
+        ["W"] = v.W
     }
 end
 
-function copyTriangle(tri)
+function copyTriangle(t)
     return {
-        copyVector3(tri[1]), 
-        copyVector3(tri[2]), 
-        copyVector3(tri[3]),
-        ["color"] = copyVector3(tri.color)
+        copyVector3(t[1]), 
+        copyVector3(t[2]), 
+        copyVector3(t[3]),
+        ["color"] = copyVector3(t.color)
     }
-end
-
-function loadModel(filename)
-    local o = {}
-
-    local file = love.filesystem.lines(filename)
-    local lines = {}
-    local vertices = {}
-
-    for line in file do 
-		table.insert(lines, line)
-	end
-
-    for _, line in ipairs(lines) do
-        if string.sub(line, 1, 1) == "v" then
-            local vertexString = split(line, "%S+")
-            local vertex = vector3(tonumber(vertexString[2]), tonumber(vertexString[3]), tonumber(vertexString[4]))
-            table.insert(vertices, vertex)
-        end
-        if string.sub(line, 1, 1) == "f" then
-            local faceString = split(line, "%S+")
-            local face = { 
-                tonumber(faceString[2]), 
-                tonumber(faceString[3]), 
-                tonumber(faceString[4]) 
-            }
-            local triangle = {
-                vertices[face[1]],
-                vertices[face[2]],
-                vertices[face[3]]
-            }
-            triangle.color = vector3(1.0, 1.0, 1.0)
-            table.insert(o, triangle)
-        end
-    end
-
-    return o
-end
-
-function split (inputString, seperator)
-    local o = {}
-    for substring in string.gmatch(inputString, seperator) do
-        table.insert(o, substring)
-    end
-    return o
 end
 
 function love.load()
-    --Load triangles into mesh
-    bonk.triangles = loadModel("content/models/bonk.obj")
+    angle = 0.0
 
-    --[[
-    cube.triangles = {
-        { vector3(0.0, 0.0, 0.0), vector3(0.0, 1.0, 0.0), vector3(1.0, 1.0, 0.0), ["color"] = vector3(1.0, 1.0, 1.0) },
-        { vector3(0.0, 0.0, 0.0), vector3(1.0, 1.0, 0.0), vector3(1.0, 0.0, 0.0), ["color"] = vector3(1.0, 1.0, 1.0) },
+    cameraPosition = vector3(0, 0, 0)
 
-        { vector3(1.0, 0.0, 0.0), vector3(1.0, 1.0, 0.0), vector3(1.0, 1.0, 1.0), ["color"] = vector3(1.0, 1.0, 1.0) },
-        { vector3(1.0, 0.0, 0.0), vector3(1.0, 1.0, 1.0), vector3(1.0, 0.0, 1.0), ["color"] = vector3(1.0, 1.0, 1.0) },
+    --Load content
+    anchor = {}
+    anchor.triangles = content.loadModel("models/anchor.obj")
 
-        { vector3(1.0, 0.0, 1.0), vector3(1.0, 1.0, 1.0), vector3(0.0, 1.0, 1.0), ["color"] = vector3(1.0, 1.0, 1.0) },
-        { vector3(1.0, 0.0, 1.0), vector3(0.0, 1.0, 1.0), vector3(0.0, 0.0, 1.0), ["color"] = vector3(1.0, 1.0, 1.0) },
-
-        { vector3(0.0, 0.0, 1.0), vector3(0.0, 1.0, 1.0), vector3(0.0, 1.0, 0.0), ["color"] = vector3(1.0, 1.0, 1.0) },
-        { vector3(0.0, 0.0, 1.0), vector3(0.0, 1.0, 0.0), vector3(0.0, 0.0, 0.0), ["color"] = vector3(1.0, 1.0, 1.0) },
-
-        { vector3(0.0, 1.0, 0.0), vector3(0.0, 1.0, 1.0), vector3(1.0, 1.0, 1.0), ["color"] = vector3(1.0, 1.0, 1.0) },
-        { vector3(0.0, 1.0, 0.0), vector3(1.0, 1.0, 1.0), vector3(1.0, 1.0, 0.0), ["color"] = vector3(1.0, 1.0, 1.0) },
-
-        { vector3(1.0, 0.0, 1.0), vector3(0.0, 0.0, 1.0), vector3(0.0, 0.0, 0.0), ["color"] = vector3(1.0, 1.0, 1.0) },
-        { vector3(1.0, 0.0, 1.0), vector3(0.0, 0.0, 0.0), vector3(1.0, 0.0, 0.0), ["color"] = vector3(1.0, 1.0, 1.0) }
-    }
-    --]]
-
-    --Fill projection matrix with trigonometric magic
-	local near = 0.1
-	local far = 1000.0
+    --Set projection matrix
 	local fov = 90.0
 	local aspectRatio = love.graphics.getWidth() / love.graphics.getHeight()
-	local fovRad = 1.0 / math.tan(fov * 0.5 / 180.0 * 3.1415)
-
-	projMat[1][1] = aspectRatio * fovRad
-	projMat[2][2] = fovRad
-	projMat[3][3] = far / (far - near)
-	projMat[4][3] = (-far * near) / (far - near)
-	projMat[3][4] = 1.0
-	projMat[4][4] = 0.0
+    local near = 0.1
+	local far = 1000.0
+    projMat = matrix.newProjection(fov, aspectRatio, near, far)
 end
 
 function love.update(dt)
     angle = angle + dt
 
-    --Fill rotation matrices with more trigonomagic
-    rotMatZ[1][1] = math.cos(angle)
-	rotMatZ[1][2] = math.sin(angle)
-	rotMatZ[2][1] = -math.sin(angle)
-	rotMatZ[2][2] = math.cos(angle)
-	rotMatZ[3][3] = 1
-	rotMatZ[4][4] = 1
+    --Set rotation and translation matrices
+    local rotMatX = matrix.newRotationX(angle)
+    --local rotMatY = matrix.newRotationY(angle)
+    local rotMatZ = matrix.newRotationZ(angle * 0.5)
+    local transMat = matrix.newTranslation(0.0, 0.0, 7.0)
 
-    rotMatX[1][1] = 1
-	rotMatX[2][2] = math.cos(angle * 0.5)
-	rotMatX[2][3] = math.sin(angle * 0.5)
-	rotMatX[3][2] = -math.sin(angle * 0.5)
-	rotMatX[3][3] = math.cos(angle * 0.5)
-	rotMatX[4][4] = 1
+    --Multiply the world matrix by rotation and translation
+    worldMat = matrix.newIdentity()
+    worldMat = matrix.mulMatrix(worldMat, rotMatX)
+    --worldMat = matrix.mulMatrix(worldMat, rotMatY)
+    worldMat = matrix.mulMatrix(worldMat, rotMatZ)
+    worldMat = matrix.mulMatrix(worldMat, transMat)
 end
 
 function love.draw(dt)
+    drawMesh(anchor)
+end
+
+function drawMesh(mesh)
     local trianglesToDraw = {}
 
-    for i = 1, #bonk.triangles, 1 do 
-        local tri = copyTriangle(bonk.triangles[i])
+    for i = 1, #mesh.triangles, 1 do 
+        local triangle = copyTriangle(mesh.triangles[i])
 
-        --Rotate triangle
-        local rotatedZ = copyTriangle(tri)
-        rotatedZ[1] = matrix.multiplyVector(rotatedZ[1], rotMatZ)
-        rotatedZ[2] = matrix.multiplyVector(rotatedZ[2], rotMatZ)
-        rotatedZ[3] = matrix.multiplyVector(rotatedZ[3], rotMatZ)
+        local transformed = copyTriangle(triangle)
+        transformed[1] = matrix.mulVector(worldMat, triangle[1])
+        transformed[2] = matrix.mulVector(worldMat, triangle[2])
+        transformed[3] = matrix.mulVector(worldMat, triangle[3])
 
-        local rotatedX = copyTriangle(rotatedZ)
-        rotatedX[1] = matrix.multiplyVector(rotatedX[1], rotMatX)
-        rotatedX[2] = matrix.multiplyVector(rotatedX[2], rotMatX)
-        rotatedX[3] = matrix.multiplyVector(rotatedX[3], rotMatX)
+        --Calculate and normalize surface normals
+        local lineA = vector.sub(transformed[2], transformed[1])
+        local lineB = vector.sub(transformed[3], transformed[1])
 
-        --Translate triangle into screen
-        local translated = copyTriangle(rotatedX)
-        translated[1].Z = translated[1].Z + 10.0
-        translated[2].Z = translated[2].Z + 10.0
-        translated[3].Z = translated[3].Z + 10.0
+        local normal = vector.crossProduct(lineA, lineB)
 
-        --Calculate surface normals using cross product
-        local lineA = {}
-        local lineB = {}
-        local normal = {}
-
-        lineA.X = translated[2].X - translated[1].X
-        lineA.Y = translated[2].Y - translated[1].Y
-        lineA.Z = translated[2].Z - translated[1].Z
-
-        lineB.X = translated[3].X - translated[1].X
-        lineB.Y = translated[3].Y - translated[1].Y
-        lineB.Z = translated[3].Z - translated[1].Z
-
-        normal.X = lineA.Y * lineB.Z - lineA.Z * lineB.Y
-        normal.Y = lineA.Z * lineB.X - lineA.X * lineB.Z
-        normal.Z = lineA.X * lineB.Y - lineA.Y * lineB.X
-
-        --Normalize normals
-        local length = math.sqrt(normal.X * normal.X + normal.Y * normal.Y + normal.Z * normal.Z)
-        normal.X = normal.X / length
-        normal.Y = normal.Y / length
-        normal.Z = normal.Z / length
+        normal = vector.normalize(normal)
 
         --Check if triangle is visable using dot product
-        local visable = 
-        normal.X * (translated[1].X - cameraPosition.X) + 
-        normal.Y * (translated[1].Y - cameraPosition.Y) + 
-        normal.Z * (translated[1].Z - cameraPosition.Z) < 0.0
-        
+        local cameraRay = vector.sub(transformed[1], cameraPosition)
+        local visable = vector.dotProduct(normal, cameraRay) < 0.0
+
         if visable then
-            --Lighting
-            lightDirection = vector3(0.0, 0.0, -1.0)
-            local length = math.sqrt(lightDirection.X * lightDirection.X + lightDirection.Y * lightDirection.Y + lightDirection.Z * lightDirection.Z)
-            lightDirection.X = lightDirection.X / length
-            lightDirection.Y = lightDirection.Y / length
-            lightDirection.Z = lightDirection.Z / length
+            --Set color of each triangle based on similarity to light direction
+            local lightDirection = vector3(0.0, 0.0, -1.0)
+            lightDirection = vector.normalize(lightDirection)
 
-            local dotProduct = normal.X * lightDirection.X + normal.Y * lightDirection.Y + normal.Z * lightDirection.Z 
-            translated.color.X = translated.color.X * dotProduct
-            translated.color.Y = translated.color.Y * dotProduct
-            translated.color.Z = translated.color.Z * dotProduct
+            local dotProduct = math.max(vector.dotProduct(lightDirection, normal))
+            transformed.color = vector.mul(transformed.color, dotProduct)
 
-            --Project triangle
-            local projected = copyTriangle(translated)
-            projected[1] = matrix.multiplyVector(projected[1], projMat)
-            projected[2] = matrix.multiplyVector(projected[2], projMat)
-            projected[3] = matrix.multiplyVector(projected[3], projMat)
+            --Project triangle into 2D
+            local projected = copyTriangle(transformed)
+            projected[1] = matrix.mulVector(projMat, projected[1])
+            projected[2] = matrix.mulVector(projMat, projected[2])
+            projected[3] = matrix.mulVector(projMat, projected[3])
 
-            --Center triangle
-            local centered = copyTriangle(projected)
-            centered[1].X = centered[1].X + 1
-            centered[1].Y = centered[1].Y + 1
-            centered[2].X = centered[2].X + 1
-            centered[2].Y = centered[2].Y + 1
-            centered[3].X = centered[3].X + 1
-            centered[3].Y = centered[3].Y + 1
+            projected[1] = vector.div(projected[1], projected[1].W)
+            projected[2] = vector.div(projected[2], projected[2].W)
+            projected[3] = vector.div(projected[3], projected[3].W)
 
-            centered[1].X = centered[1].X * 0.5 * love.graphics.getWidth()
-            centered[1].Y = centered[1].Y * 0.5 * love.graphics.getHeight()
-            centered[2].X = centered[2].X * 0.5 * love.graphics.getWidth()
-            centered[2].Y = centered[2].Y * 0.5 * love.graphics.getHeight()
-            centered[3].X = centered[3].X * 0.5 * love.graphics.getWidth()
-            centered[3].Y = centered[3].Y * 0.5 * love.graphics.getHeight()
+            --Center triangle on screen
+            local screenOffset = vector3(1, 1, 0)
+            projected[1] = vector.add(projected[1], screenOffset)
+            projected[2] = vector.add(projected[2], screenOffset)
+            projected[3] = vector.add(projected[3], screenOffset)
+        
+            projected[1].X = projected[1].X * 0.5 * love.graphics.getWidth()
+            projected[1].Y = projected[1].Y * 0.5 * love.graphics.getHeight()
+            projected[2].X = projected[2].X * 0.5 * love.graphics.getWidth()
+            projected[2].Y = projected[2].Y * 0.5 * love.graphics.getHeight()
+            projected[3].X = projected[3].X * 0.5 * love.graphics.getWidth()
+            projected[3].Y = projected[3].Y * 0.5 * love.graphics.getHeight()
 
-            table.insert(trianglesToDraw, centered)
+            --Add triangle to list to draw later
+            table.insert(trianglesToDraw, projected)
         end
     end
-    --Sort triangles by depth
-    
+    --Sort triangles by depth as I do not feel like working with depth buffers in love2d
+    table.sort(trianglesToDraw, 
+    function(t1, t2)
+        local avg1 = (t1[1].Z + t1[2].Z + t1[2].Z) / 3.0
+        local avg2 = (t2[1].Z + t2[2].Z + t2[2].Z) / 3.0
+        return avg1 > avg2
+    end)
 
     for i = 1, #trianglesToDraw, 1 do
         drawTriangle(trianglesToDraw[i])
     end
 end
 
-function drawTriangle(tri)
-    love.graphics.setColor(tri.color.X, tri.color.Y, tri.color.Z, 1)
-    love.graphics.polygon('fill', tri[1].X, tri[1].Y, tri[2].X, tri[2].Y,tri[3].X, tri[3].Y)
+function drawTriangle(triangle)
+    love.graphics.setColor(triangle.color.X, triangle.color.Y, triangle.color.Z, 1)
+    love.graphics.polygon('fill', 
+    triangle[1].X, triangle[1].Y, 
+    triangle[2].X, triangle[2].Y, 
+    triangle[3].X, triangle[3].Y)
 end
