@@ -23,15 +23,19 @@ function copyTriangle(t)
 end
 
 function love.load()
-    angle = 0.0
+    cameraPos = vector3(0, 0, 0)
+    cameraLookDir = vector3(0, 0, 0)
 
-    cameraPosition = vector3(0, 0, 0)
+    cameraRotY = 0
+    cameraRotX = 0
+    
+    angle = 0.0
 
     --Load content
     anchor = {}
     anchor.triangles = content.loadModel("models/anchor.obj")
 
-    --Set projection matrix
+    --Build projection matrix
 	local fov = 90.0
 	local aspectRatio = love.graphics.getWidth() / love.graphics.getHeight()
     local near = 0.1
@@ -40,20 +44,82 @@ function love.load()
 end
 
 function love.update(dt)
-    angle = angle + dt
+    local up = vector3(0, 1, 0)
+    local forward = vector.normalize(cameraLookDir)
+
+    local a = vector.mul(forward, vector.dotProduct(up, forward))
+    up = vector.sub(up, a)
+    up = vector.normalize(up)
+
+    local right = vector.crossProduct(up, forward)
+
+    local rightVelocity = vector.mul(right, 2.0 * dt)
+    local upVelocity = vector.mul(up, 2.0 * dt)
+    local forwardVelocity = vector.mul(forward, 2.0 * dt)
+
+    if love.keyboard.isDown("s") then
+        cameraPos = vector.sub(cameraPos, forwardVelocity)
+    end
+    if love.keyboard.isDown("w") then
+        cameraPos = vector.add(cameraPos, forwardVelocity)
+    end
+    if love.keyboard.isDown("a") then
+        cameraPos = vector.sub(cameraPos, rightVelocity)
+    end
+    if love.keyboard.isDown("d") then
+        cameraPos = vector.add(cameraPos, rightVelocity)
+    end
+    if love.keyboard.isDown("space") then
+        cameraPos = vector.sub(cameraPos, upVelocity)
+    end
+    if love.keyboard.isDown("lshift") then
+        cameraPos = vector.add(cameraPos, upVelocity)
+    end
+
+    if love.keyboard.isDown("up") then
+        cameraRotX = cameraRotX + 1.0 * dt
+    end
+    if love.keyboard.isDown("down") then
+        cameraRotX = cameraRotX - 1.0 * dt
+    end
+    if love.keyboard.isDown("left") then
+        cameraRotY = cameraRotY + 1.0 * dt
+    end
+    if love.keyboard.isDown("right") then
+        cameraRotY = cameraRotY - 1.0 * dt
+    end
+
+    --angle = angle + dt
 
     --Set rotation and translation matrices
     local rotMatX = matrix.newRotationX(angle)
-    --local rotMatY = matrix.newRotationY(angle)
     local rotMatZ = matrix.newRotationZ(angle * 0.5)
+
     local transMat = matrix.newTranslation(0.0, 0.0, 7.0)
 
     --Multiply the world matrix by rotation and translation
     worldMat = matrix.newIdentity()
     worldMat = matrix.mulMatrix(worldMat, rotMatX)
-    --worldMat = matrix.mulMatrix(worldMat, rotMatY)
     worldMat = matrix.mulMatrix(worldMat, rotMatZ)
+
     worldMat = matrix.mulMatrix(worldMat, transMat)
+
+    --Set view matrix
+    local up = vector3(0, 1, 0)
+    local target = vector3(0, 0, 1)
+
+    local cameraRotMatX = matrix.newRotationX(cameraRotX)
+    local cameraRotMatY = matrix.newRotationY(cameraRotY)
+
+    local cameraRotMat = matrix.newIdentity()
+    local cameraRotMat = matrix.mulMatrix(cameraRotMat, cameraRotMatX)
+    local cameraRotMat = matrix.mulMatrix(cameraRotMat, cameraRotMatY)
+
+    cameraLookDir = vector.mulMatrix(target, cameraRotMat)
+    target = vector.add(cameraPos, cameraLookDir)
+
+    local cameraMat = matrix.pointAt(cameraPos, target, up)
+    viewMat = matrix.simpleInverse(cameraMat)
 end
 
 function love.draw(dt)
@@ -67,9 +133,9 @@ function drawMesh(mesh)
         local triangle = copyTriangle(mesh.triangles[i])
 
         local transformed = copyTriangle(triangle)
-        transformed[1] = matrix.mulVector(worldMat, triangle[1])
-        transformed[2] = matrix.mulVector(worldMat, triangle[2])
-        transformed[3] = matrix.mulVector(worldMat, triangle[3])
+        transformed[1] = vector.mulMatrix(triangle[1], worldMat)
+        transformed[2] = vector.mulMatrix(triangle[2], worldMat)
+        transformed[3] = vector.mulMatrix(triangle[3], worldMat)
 
         --Calculate and normalize surface normals
         local lineA = vector.sub(transformed[2], transformed[1])
@@ -80,22 +146,27 @@ function drawMesh(mesh)
         normal = vector.normalize(normal)
 
         --Check if triangle is visable using dot product
-        local cameraRay = vector.sub(transformed[1], cameraPosition)
+        local cameraRay = vector.sub(transformed[1], cameraPos)
         local visable = vector.dotProduct(normal, cameraRay) < 0.0
 
         if visable then
             --Set color of each triangle based on similarity to light direction
-            local lightDirection = vector3(0.0, 0.0, -1.0)
+            local lightDirection = vector3(0.0, -0.5, -1.0)
             lightDirection = vector.normalize(lightDirection)
 
             local dotProduct = math.max(vector.dotProduct(lightDirection, normal))
-            transformed.color = vector.mul(transformed.color, dotProduct)
+            transformed.color = vector.mul(transformed.color, math.max(0.1, dotProduct))
+
+            local viewed = copyTriangle(transformed)
+            viewed[1] = vector.mulMatrix(viewed[1], viewMat)
+            viewed[2] = vector.mulMatrix(viewed[2], viewMat)
+            viewed[3] = vector.mulMatrix(viewed[3], viewMat)
 
             --Project triangle into 2D
-            local projected = copyTriangle(transformed)
-            projected[1] = matrix.mulVector(projMat, projected[1])
-            projected[2] = matrix.mulVector(projMat, projected[2])
-            projected[3] = matrix.mulVector(projMat, projected[3])
+            local projected = copyTriangle(viewed)
+            projected[1] = vector.mulMatrix(projected[1], projMat)
+            projected[2] = vector.mulMatrix(projected[2], projMat)
+            projected[3] = vector.mulMatrix(projected[3], projMat)
 
             projected[1] = vector.div(projected[1], projected[1].W)
             projected[2] = vector.div(projected[2], projected[2].W)

@@ -46,4 +46,13 @@ function vector.crossProduct(v1, v2)
     return v
 end
 
+function vector.mulMatrix(v, m)
+    local o = {}
+    o.X = v.X * m[1][1] + v.Y * m[2][1] + v.Z * m[3][1] + v.W * m[4][1]
+    o.Y = v.X * m[1][2] + v.Y * m[2][2] + v.Z * m[3][2] + v.W * m[4][2]
+    o.Z = v.X * m[1][3] + v.Y * m[2][3] + v.Z * m[3][3] + v.W * m[4][3]
+    o.W = v.X * m[1][4] + v.Y * m[2][4] + v.Z * m[3][4] + v.W * m[4][4]
+    return o
+end
+
 return vector

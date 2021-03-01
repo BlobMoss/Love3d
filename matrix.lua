@@ -1,5 +1,7 @@
 local matrix = {}
 
+local vector = require "vector"
+
 function matrix.newIdentity()
     local o = {
         { 1.0, 0.0, 0.0, 0.0 },
@@ -68,15 +70,6 @@ function matrix.newProjection(fovDeg, aspectRatio, near, far)
     return o
 end
 
-function matrix.mulVector(m, v)
-    local o = {}
-    o.X = v.X * m[1][1] + v.Y * m[2][1] + v.Z * m[3][1] + v.W * m[4][1]
-    o.Y = v.X * m[1][2] + v.Y * m[2][2] + v.Z * m[3][2] + v.W * m[4][2]
-    o.Z = v.X * m[1][3] + v.Y * m[2][3] + v.Z * m[3][3] + v.W * m[4][3]
-    o.W = v.X * m[1][4] + v.Y * m[2][4] + v.Z * m[3][4] + v.W * m[4][4]
-    return o
-end
-
 function matrix.mulMatrix(m1, m2)
     local o = matrix.newIdentity()
     for i = 1, 4, 1 do --columns
@@ -84,6 +77,57 @@ function matrix.mulMatrix(m1, m2)
             o[j][i] = m1[j][1] * m2[1][i] + m1[j][2] * m2[2][i] + m1[j][3] * m2[3][i] + m1[j][4] * m2[4][i];
         end
     end
+    return o
+end
+
+function matrix.pointAt(position, target, up)
+    local newForward = vector.sub(target, position)
+    newForward = vector.normalize(newForward)
+
+    local a = vector.mul(newForward, vector.dotProduct(up, newForward))
+    local newUp = vector.sub(up, a)
+    newUp = vector.normalize(newUp)
+
+    local newRight = vector.crossProduct(newUp, newForward)
+
+    local o = matrix.newIdentity()
+    o[1][1] = newRight.X
+    o[1][2] = newRight.Y
+    o[1][3] = newRight.Z
+    o[1][4] = 0.0
+	o[2][1] = newUp.X
+    o[2][2] = newUp.Y
+    o[2][3] = newUp.Z
+    o[2][4] = 0.0
+	o[3][1] = newForward.X
+    o[3][2] = newForward.Y
+    o[3][3] = newForward.Z
+    o[3][4] = 0.0
+	o[4][1] = position.X
+    o[4][2] = position.Y
+    o[4][3] = position.Z
+    o[4][4] = 1.0
+    return o
+end
+
+function matrix.simpleInverse(m)
+    local o = matrix.newIdentity()
+    o[1][1] = m[1][1]
+    o[1][2] = m[2][1]
+    o[1][3] = m[3][1]
+    o[1][4] = 0.0
+    o[2][1] = m[1][2]
+    o[2][2] = m[2][2]
+    o[2][3] = m[3][2]
+    o[2][4] = 0.0
+    o[3][1] = m[1][3]
+    o[3][2] = m[2][3]
+    o[3][3] = m[3][3]
+    o[3][4] = 0.0
+    o[4][1] = -(m[4][1] * o[1][1] + m[4][2] * o[2][1] + m[4][3] * o[3][1])
+    o[4][2] = -(m[4][1] * o[1][2] + m[4][2] * o[2][2] + m[4][3] * o[3][2])
+    o[4][3] = -(m[4][1] * o[1][3] + m[4][2] * o[2][3] + m[4][3] * o[3][3])
+    o[4][4] = 1.0
     return o
 end
 
