@@ -2,6 +2,8 @@ local vector = require "vector"
 local matrix = require "matrix"
 local triangle = require "triangle"
 
+local world = require "world"
+
 local content = require "content"
 
 function love.load()
@@ -16,9 +18,13 @@ function love.load()
     
     angle = 0.0
 
+    love.graphics.setBackgroundColor(0.175, 0.15, 0.175, 1.0)
+
     --Load content
     anchor = {}
     anchor.triangles = content.loadModel("models/anchor.obj")
+
+    world.load()
 
     --Build projection matrix
 	local fov = 90.0
@@ -69,19 +75,10 @@ function love.update(dt)
         cameraRotY = cameraRotY - 1.0 * dt
     end
 
-    --angle = angle + dt
-
-    --Set rotation and translation matrices
-    local rotMatX = matrix.newRotationX(angle)
-    local rotMatZ = matrix.newRotationZ(angle * 0.5)
-
+    --Set translation matrix
     local transMat = matrix.newTranslation(0.0, 0.0, 7.0)
 
-    --Multiply the world matrix by rotation and translation
     worldMat = matrix.newIdentity()
-    worldMat = matrix.mulMatrix(worldMat, rotMatX)
-    worldMat = matrix.mulMatrix(worldMat, rotMatZ)
-
     worldMat = matrix.mulMatrix(worldMat, transMat)
 
     --Set view matrix
@@ -103,14 +100,14 @@ function love.update(dt)
 end
 
 function love.draw(dt)
-    drawMesh(anchor)
+    drawTriangles(anchor.triangles)
 end
 
-function drawMesh(mesh)
+function drawTriangles(triangles)
     local trianglesToDraw = {}
 
-    for i = 1, #mesh.triangles, 1 do 
-        local t = copyTriangle(mesh.triangles[i])
+    for i = 1, #triangles, 1 do 
+        local t = copyTriangle(triangles[i])
 
         local tTransformed = copyTriangle(t)
         tTransformed[1] = vector.mulMatrix(t[1], worldMat)
@@ -213,12 +210,12 @@ function drawMesh(mesh)
         end
 
         for t = 1, #listOfTriangles, 1 do 
-            drawTriangle(listOfTriangles[t])
+            draw2DTriangle(listOfTriangles[t])
         end
     end
 end
 
-function drawTriangle(t)
+function draw2DTriangle(t)
     love.graphics.setColor(t.color.X, t.color.Y, t.color.Z, 1.0)
     love.graphics.polygon('fill', 
     t[1].X, t[1].Y, 
