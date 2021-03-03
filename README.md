@@ -1,2 +1,2 @@
 # love3d
-Also featuring birdoids!
+Will hopefully feature a world of marching cubes
