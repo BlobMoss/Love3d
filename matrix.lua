@@ -2,6 +2,7 @@ local matrix = {}
 
 local vector = require "vector"
 
+--Creates a 4 by 4 matrix with a default value
 function matrix.newIdentity()
     local o = {
         { 1.0, 0.0, 0.0, 0.0 },
@@ -12,7 +13,7 @@ function matrix.newIdentity()
     return o
 end
 
-function matrix.newRotationX(angle) --angle in radians
+function matrix.newRotationX(angle) --Angle in radians
     local o = matrix.newIdentity()
     o[1][1] = 1.0
 	o[2][2] = math.cos(angle)
@@ -23,7 +24,7 @@ function matrix.newRotationX(angle) --angle in radians
     return o
 end
 
-function matrix.newRotationY(angle) --angle in radians
+function matrix.newRotationY(angle) --Angle in radians
     local o = matrix.newIdentity()
     o[1][1] = math.cos(angle)
 	o[1][3] = math.sin(angle)
@@ -34,7 +35,7 @@ function matrix.newRotationY(angle) --angle in radians
     return o
 end
 
-function matrix.newRotationZ(angle) --angle in radians
+function matrix.newRotationZ(angle) --Angle in radians
     local o = matrix.newIdentity()
     o[1][1] = math.cos(angle)
 	o[1][2] = math.sin(angle)
@@ -70,6 +71,7 @@ function matrix.newProjection(fovDeg, aspectRatio, near, far)
     return o
 end
 
+--Matrix by matrix multiplication
 function matrix.mulMatrix(m1, m2)
     local o = matrix.newIdentity()
     for i = 1, 4, 1 do --columns
@@ -80,28 +82,27 @@ function matrix.mulMatrix(m1, m2)
     return o
 end
 
-function matrix.pointAt(position, target, up)
-    local newForward = vector.sub(target, position)
-    newForward = vector.normalize(newForward)
+function matrix.pointAt(position, target, upv)
+    local forward = vector.sub(target, position)
+    forward = vector.normalize(forward)
 
-    local a = vector.mul(newForward, vector.dotProduct(up, newForward))
-    local newUp = vector.sub(up, a)
-    newUp = vector.normalize(newUp)
+    local up = vector.sub(upv, vector.mul(forward, vector.dot(upv, forward)))
+    up = vector.normalize(up)
 
-    local newRight = vector.crossProduct(newUp, newForward)
+    local right = vector.cross(up, forward)
 
     local o = matrix.newIdentity()
-    o[1][1] = newRight.X
-    o[1][2] = newRight.Y
-    o[1][3] = newRight.Z
+    o[1][1] = right.X
+    o[1][2] = right.Y
+    o[1][3] = right.Z
     o[1][4] = 0.0
-	o[2][1] = newUp.X
-    o[2][2] = newUp.Y
-    o[2][3] = newUp.Z
+	o[2][1] = up.X
+    o[2][2] = up.Y
+    o[2][3] = up.Z
     o[2][4] = 0.0
-	o[3][1] = newForward.X
-    o[3][2] = newForward.Y
-    o[3][3] = newForward.Z
+	o[3][1] = forward.X
+    o[3][2] = forward.Y
+    o[3][3] = forward.Z
     o[3][4] = 0.0
 	o[4][1] = position.X
     o[4][2] = position.Y
@@ -110,6 +111,7 @@ function matrix.pointAt(position, target, up)
     return o
 end
 
+--Does not work for all matrices
 function matrix.simpleInverse(m)
     local o = matrix.newIdentity()
     o[1][1] = m[1][1]
