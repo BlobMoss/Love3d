@@ -27,6 +27,7 @@ function love.load()
     marching_cubes.load()
     worldMesh = {}
     worldMesh.triangles = marching_cubes.triangles
+    print("Marching cubes generated " .. #worldMesh.triangles .. " triangles")
 
     --Build projection matrix
 	local fov = 90.0
@@ -130,11 +131,11 @@ function drawTriangles(triangles)
 
         if visable then
             --Set color of each triangle based on similarity to light direction
-            local lightDirection = vector3(0.2, -0.5, -1.0)
+            local lightDirection = vector3(0.0, -1.0, -1.0)
             lightDirection = vector.normalize(lightDirection)
 
             local dot = math.max(vector.dot(lightDirection, normal))
-            tTransformed.color = vector.mul(tTransformed.color, math.max(0.1, dot))
+            tTransformed.color = vector.mul(tTransformed.color, 0.5 + dot * 0.5)
 
             local tViewed = copyTriangle(tTransformed)
             tViewed[1] = vector.mulMatrix(tViewed[1], viewMat)
@@ -184,7 +185,7 @@ function drawTriangles(triangles)
         local listOfTriangles = {}
         local listOfClippedTriangles = {}
         table.insert(listOfTriangles, copyTriangle(trianglesToDraw[i]))
-
+        --[[
         --Loop once for ever edge of the screen e
         for e = 1, 4, 1 do 
             for t = 1, #listOfTriangles, 1 do 
@@ -211,6 +212,7 @@ function drawTriangles(triangles)
                 table.insert(listOfTriangles, copyTriangle(listOfClippedTriangles[c]))
             end
         end
+        --]]
 
         for t = 1, #listOfTriangles, 1 do 
             draw2DTriangle(listOfTriangles[t])

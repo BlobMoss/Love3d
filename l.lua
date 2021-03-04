@@ -1,7 +1,4 @@
-local tri_table = {}
-
-tri_table.triangulation = {
-    {},
+{-2 },
     { 1, 9, 4 },
     { 1, 2, 10 },
     { 2, 9, 4, 10, 9, 2 },
@@ -256,37 +253,4 @@ tri_table.triangulation = {
     { 2, 4, 9, 10, 2, 9 },
     { 1, 10, 2 },
     { 1, 4, 9 },
-    {}
-}
-
-tri_table.cornerIndexAFromEdge = {
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7,
-    8,
-    1,
-    2,
-    3,
-    4
-}
-
-tri_table.cornerIndexBFromEdge = {
-    2,
-    3,
-    4,
-    1,
-    6,
-    7,
-    8,
-    5,
-    5,
-    6,
-    7,
-    8
-}
-
-return tri_table
+    {-2 }

@@ -3,8 +3,8 @@ local marching_cubes = {}
 local tri_table = require "tri_table"
 local vector = require "vector"
 
-local isoLevel = 14.0
-local pointsPerAxis = 12
+local isoLevel = 0.0
+local pointsPerAxis = 32
 
 local points = {}
 
@@ -16,7 +16,7 @@ end
 
 function interpolateVerts(v1, v2)
     local t = (isoLevel - v1.W) / (v2.W - v1.W)
-    local t = 0.5
+    --t = 0.5
     return vector.add(v1, vector.mul(vector.sub(v2, v1), t))
 end
 
@@ -25,7 +25,7 @@ function marching_cubes.load()
         for y = 1, pointsPerAxis, 1 do 
             for z = 1, pointsPerAxis, 1 do 
                 local v4 = vector3(x, y, z)
-                v4.W = love.math.noise((x + love.math.random()) * 0.15, (y + love.math.random()) * 0.15, (z + love.math.random()) * 0.15) * 32
+                v4.W = love.math.noise((x + love.math.random()) * 0.1, (y + love.math.random()) * 0.1, (z + love.math.random()) * 0.1) * 32 - 16
                 points[indexOfPoint(x, y, z)] = v4
             end
         end
@@ -80,7 +80,7 @@ function march(v)
             interpolateVerts(cubeCorners[a1], cubeCorners[b1]),
             interpolateVerts(cubeCorners[a2], cubeCorners[b2]),
             interpolateVerts(cubeCorners[a3], cubeCorners[b3]),
-            color = vector3(0.8, 0.3, 0.3)
+            color = vector3(v.Y / pointsPerAxis, 0.3, 0.3)
         }
 
         table.insert(marching_cubes.triangles, triangle)
