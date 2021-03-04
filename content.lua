@@ -35,9 +35,10 @@ function content.loadModel(path)
             local triangle = {
                 vertices[face[1]],
                 vertices[face[2]],
-                vertices[face[3]]
+                vertices[face[3]],
+                color = vector3(0.2, 0.3, 0.6)
             }
-            triangle.color = vector3(0.2, 0.3, 0.6)
+            
             table.insert(o, triangle)
         end
     end

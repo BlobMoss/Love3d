@@ -2,7 +2,7 @@ local vector = require "vector"
 local matrix = require "matrix"
 local triangle = require "triangle"
 
-local world = require "world"
+local marching_cubes = require "marching_cubes"
 
 local content = require "content"
 
@@ -18,13 +18,15 @@ function love.load()
     
     angle = 0.0
 
-    love.graphics.setBackgroundColor(0.175, 0.15, 0.175, 1.0)
+    love.graphics.setBackgroundColor(0.15, 0.15, 0.175, 1.0)
 
     --Load content
     anchor = {}
     anchor.triangles = content.loadModel("models/anchor.obj")
 
-    world.load()
+    marching_cubes.load()
+    worldMesh = {}
+    worldMesh.triangles = marching_cubes.triangles
 
     --Build projection matrix
 	local fov = 90.0
@@ -78,8 +80,8 @@ function love.update(dt)
     --Set translation matrix
     local transMat = matrix.newTranslation(0.0, 0.0, 7.0)
 
-    worldMat = matrix.newIdentity()
-    worldMat = matrix.mulMatrix(worldMat, transMat)
+    marching_cubesMat = matrix.newIdentity()
+    marching_cubesMat = matrix.mulMatrix(marching_cubesMat, transMat)
 
     --Set view matrix
     local up = vector3(0.0, 1.0, 0.0)
@@ -100,7 +102,8 @@ function love.update(dt)
 end
 
 function love.draw(dt)
-    drawTriangles(anchor.triangles)
+    --drawTriangles(anchor.triangles)
+    drawTriangles(worldMesh.triangles)
 end
 
 function drawTriangles(triangles)
@@ -110,9 +113,9 @@ function drawTriangles(triangles)
         local t = copyTriangle(triangles[i])
 
         local tTransformed = copyTriangle(t)
-        tTransformed[1] = vector.mulMatrix(t[1], worldMat)
-        tTransformed[2] = vector.mulMatrix(t[2], worldMat)
-        tTransformed[3] = vector.mulMatrix(t[3], worldMat)
+        tTransformed[1] = vector.mulMatrix(t[1], marching_cubesMat)
+        tTransformed[2] = vector.mulMatrix(t[2], marching_cubesMat)
+        tTransformed[3] = vector.mulMatrix(t[3], marching_cubesMat)
 
         --Calculate and normalize surface normals
         local lineA = vector.sub(tTransformed[2], tTransformed[1])
@@ -127,7 +130,7 @@ function drawTriangles(triangles)
 
         if visable then
             --Set color of each triangle based on similarity to light direction
-            local lightDirection = vector3(0.0, -0.5, -1.0)
+            local lightDirection = vector3(0.2, -0.5, -1.0)
             lightDirection = vector.normalize(lightDirection)
 
             local dot = math.max(vector.dot(lightDirection, normal))
