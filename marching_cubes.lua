@@ -5,27 +5,28 @@ local vector = require "vector"
 
 local isoLevel = 0.0
 local pointsPerAxis = 32
-
 local points = {}
 
-marching_cubes.triangles = {}
+local triangles = {}
 
 function indexOfPoint(x, y, z)
     return z * pointsPerAxis * pointsPerAxis + y * pointsPerAxis + x
 end
 
 function interpolateVerts(v1, v2)
+    --Bring vertex closer to higher iso
     local t = (isoLevel - v1.W) / (v2.W - v1.W)
     --t = 0.5
     return vector.add(v1, vector.mul(vector.sub(v2, v1), t))
 end
 
-function marching_cubes.load()
+function marching_cubes.generate()
     for x = 1, pointsPerAxis, 1 do 
         for y = 1, pointsPerAxis, 1 do 
             for z = 1, pointsPerAxis, 1 do 
                 local v4 = vector3(x, y, z)
-                v4.W = love.math.noise((x + love.math.random()) * 0.1, (y + love.math.random()) * 0.1, (z + love.math.random()) * 0.1) * 32 - 16
+                --This will be some proper world generation at some point but noise looks fine for now
+                v4.W = love.math.noise((x + love.math.random()) * 0.1, (y + love.math.random()) * 0.1, (z + love.math.random()) * 0.1) * 32 - 8 - y * 0.5
                 points[indexOfPoint(x, y, z)] = v4
             end
         end
@@ -36,13 +37,17 @@ function marching_cubes.load()
             march(points[i])
         end
     end
+
+    return triangles
 end
 
 function march(v)
+    --The final rows are included when point is turned into cube
     if (v.X >= pointsPerAxis - 1 or v.Y >= pointsPerAxis - 1 or v.Z >= pointsPerAxis - 1) then 
         return
     end
 
+    --Create a table containing ever corner of a cube
     local cubeCorners = {
         points[indexOfPoint(v.X,     v.Y,     v.Z    )],
         points[indexOfPoint(v.X + 1, v.Y,     v.Z    )],
@@ -56,6 +61,7 @@ function march(v)
 
     local cubeIndex = 1
 
+    --Generate 8 bit number based on which nodes have a value below the iso level
     if cubeCorners[1].W < isoLevel then cubeIndex = cubeIndex + 1 end
     if cubeCorners[2].W < isoLevel then cubeIndex = cubeIndex + 2 end
     if cubeCorners[3].W < isoLevel then cubeIndex = cubeIndex + 4 end
@@ -65,8 +71,9 @@ function march(v)
     if cubeCorners[7].W < isoLevel then cubeIndex = cubeIndex + 64 end
     if cubeCorners[8].W < isoLevel then cubeIndex = cubeIndex + 128 end
 
-    local triangles = tri_table.triangulation[cubeIndex]
-    for i = 0, #triangles - 1, 3 do 
+    --Find which triangles correspond to that index
+    local configuration = tri_table.triangulation[cubeIndex]
+    for i = 0, #configuration - 1, 3 do 
         local a1 = tri_table.cornerIndexAFromEdge[tri_table.triangulation[cubeIndex][i + 1]]
         local b1 = tri_table.cornerIndexBFromEdge[tri_table.triangulation[cubeIndex][i + 1]]
 
@@ -82,8 +89,7 @@ function march(v)
             interpolateVerts(cubeCorners[a3], cubeCorners[b3]),
             color = vector3(v.Y / pointsPerAxis, 0.3, 0.3)
         }
-
-        table.insert(marching_cubes.triangles, triangle)
+        table.insert(triangles, triangle)
     end
 end
 

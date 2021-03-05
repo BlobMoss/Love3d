@@ -6,27 +6,30 @@ local marching_cubes = require "marching_cubes"
 
 local content = require "content"
 
+windowWidth = love.graphics.getWidth()
+windowHeight = love.graphics.getHeight()
+
+local cameraPos = vector3(0.0, 0.0, 0.0)
+local cameraLookDir = vector3(0.0, 0.0, 0.0)
+
+local cameraRotY = 0.0
+local cameraRotX = 0.0
+
+local angle = 0.0
+
+local projMat = {}
+
+local anchor = {}
+
+local worldMesh = {}
+
 function love.load()
-    windowWidth = love.graphics.getWidth()
-    windowHeight = love.graphics.getHeight()
-
-    cameraPos = vector3(0.0, 0.0, 0.0)
-    cameraLookDir = vector3(0.0, 0.0, 0.0)
-
-    cameraRotY = 0.0
-    cameraRotX = 0.0
-    
-    angle = 0.0
-
     love.graphics.setBackgroundColor(0.15, 0.15, 0.175, 1.0)
 
     --Load content
-    anchor = {}
     anchor.triangles = content.loadModel("models/anchor.obj")
-
-    marching_cubes.load()
-    worldMesh = {}
-    worldMesh.triangles = marching_cubes.triangles
+    
+    worldMesh.triangles = marching_cubes.generate()
     print("Marching cubes generated " .. #worldMesh.triangles .. " triangles")
 
     --Build projection matrix
@@ -173,7 +176,8 @@ function drawTriangles(triangles)
             end
         end
     end
-    --Sort triangles by depth as I do not feel like working with depth buffers in love2d
+
+    --Sort triangles by depth as I do not feel like working with depth buffers
     table.sort(trianglesToDraw, 
     function(t1, t2)
         local avg1 = (t1[1].Z + t1[2].Z + t1[2].Z) / 3.0
@@ -185,8 +189,8 @@ function drawTriangles(triangles)
         local listOfTriangles = {}
         local listOfClippedTriangles = {}
         table.insert(listOfTriangles, copyTriangle(trianglesToDraw[i]))
-        --[[
-        --Loop once for ever edge of the screen e
+        ----[[
+        --Loop once for ever edge e of the screen
         for e = 1, 4, 1 do 
             for t = 1, #listOfTriangles, 1 do 
                 local clipped = {}
@@ -212,7 +216,7 @@ function drawTriangles(triangles)
                 table.insert(listOfTriangles, copyTriangle(listOfClippedTriangles[c]))
             end
         end
-        --]]
+        ----]]
 
         for t = 1, #listOfTriangles, 1 do 
             draw2DTriangle(listOfTriangles[t])
