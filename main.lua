@@ -84,8 +84,8 @@ function love.update(dt)
     --Set translation matrix
     local transMat = matrix.newTranslation(0.0, 0.0, 7.0)
 
-    marching_cubesMat = matrix.newIdentity()
-    marching_cubesMat = matrix.mulMatrix(marching_cubesMat, transMat)
+    worldMat = matrix.newIdentity()
+    worldMat = matrix.mulMatrix(worldMat, transMat)
 
     --Set view matrix
     local up = vector3(0.0, 1.0, 0.0)
@@ -117,9 +117,9 @@ function drawTriangles(triangles)
         local t = copyTriangle(triangles[i])
 
         local tTransformed = copyTriangle(t)
-        tTransformed[1] = vector.mulMatrix(t[1], marching_cubesMat)
-        tTransformed[2] = vector.mulMatrix(t[2], marching_cubesMat)
-        tTransformed[3] = vector.mulMatrix(t[3], marching_cubesMat)
+        tTransformed[1] = vector.mulMatrix(t[1], worldMat)
+        tTransformed[2] = vector.mulMatrix(t[2], worldMat)
+        tTransformed[3] = vector.mulMatrix(t[3], worldMat)
 
         --Calculate and normalize surface normals
         local lineA = vector.sub(tTransformed[2], tTransformed[1])
@@ -177,7 +177,7 @@ function drawTriangles(triangles)
         end
     end
 
-    --Sort triangles by depth as I do not feel like working with depth buffers
+    --Sort triangles by average vertex depth as I do not feel like working with depth buffers
     table.sort(trianglesToDraw, 
     function(t1, t2)
         local avg1 = (t1[1].Z + t1[2].Z + t1[2].Z) / 3.0
@@ -189,11 +189,14 @@ function drawTriangles(triangles)
         local listOfTriangles = {}
         local listOfClippedTriangles = {}
         table.insert(listOfTriangles, copyTriangle(trianglesToDraw[i]))
-        ----[[
-        --Loop once for ever edge e of the screen
+
+        --Seems to work fine without this segment so I guess it could be removed for performance
+        --[[ 
+        --Loop once for every edge e of the screen
         for e = 1, 4, 1 do 
             for t = 1, #listOfTriangles, 1 do 
                 local clipped = {}
+
                 if e == 1 then 
                     clipped = triangle.clipAgainstPlane(vector3(0.0, 0.0, 0.0), vector3(0.0, 1.0, 0.0), copyTriangle(listOfTriangles[t]))
                 elseif e == 2 then
@@ -216,7 +219,7 @@ function drawTriangles(triangles)
                 table.insert(listOfTriangles, copyTriangle(listOfClippedTriangles[c]))
             end
         end
-        ----]]
+        --]]
 
         for t = 1, #listOfTriangles, 1 do 
             draw2DTriangle(listOfTriangles[t])

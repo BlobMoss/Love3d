@@ -4,7 +4,7 @@ local tri_table = require "tri_table"
 local vector = require "vector"
 
 local isoLevel = 0.0
-local pointsPerAxis = 32
+local pointsPerAxis = 20
 local points = {}
 
 local triangles = {}
