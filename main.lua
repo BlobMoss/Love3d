@@ -191,7 +191,7 @@ function drawTriangles(triangles)
         table.insert(listOfTriangles, copyTriangle(trianglesToDraw[i]))
 
         --Seems to work fine without this segment so I guess it could be removed for performance
-        --[[ 
+        ---[[ 
         --Loop once for every edge e of the screen
         for e = 1, 4, 1 do 
             for t = 1, #listOfTriangles, 1 do 
