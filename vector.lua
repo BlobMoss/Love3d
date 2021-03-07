@@ -1,6 +1,6 @@
 local vector = {}
 
---I guess this would be a constructor in löve2D
+--I guess this would be the equivalent of a c# constructor in löve2D
 function vector3(X, Y, Z)
     return {
         ["X"] = X,
@@ -10,8 +10,17 @@ function vector3(X, Y, Z)
     }
 end
 
+--Creates a vector3 with a default value
+function vector.newIdentity()
+    return {
+        ["X"] = 0.0,
+        ["Y"] = 0.0,
+        ["Z"] = 0.0,
+        ["W"] = 1.0
+    }
+end
+
 --Function for copying table by value rather than by reference
---Why does lua work like this? I do not know
 function copyVector3(v)
     return { 
         ["X"] = v.X, 
@@ -55,7 +64,7 @@ end
 
 --Vector used for getting the line with a 90 degree angle to bot v1 and v2
 function vector.cross(v1, v2)
-    local o = vector3(0.0, 0.0, 0.0)
+    local o = vector.newIdentity()
     o.X = v1.Y * v2.Z - v1.Z * v2.Y
     o.Y = v1.Z * v2.X - v1.X * v2.Z
     o.Z = v1.X * v2.Y - v1.Y * v2.X
@@ -64,7 +73,7 @@ end
 
 --Vector by matrix multiplication
 function vector.mulMatrix(v, m)
-    local o = vector3(0.0, 0.0, 0.0)
+    local o = vector.newIdentity()
     o.X = v.X * m[1][1] + v.Y * m[2][1] + v.Z * m[3][1] + v.W * m[4][1]
     o.Y = v.X * m[1][2] + v.Y * m[2][2] + v.Z * m[3][2] + v.W * m[4][2]
     o.Z = v.X * m[1][3] + v.Y * m[2][3] + v.Z * m[3][3] + v.W * m[4][3]

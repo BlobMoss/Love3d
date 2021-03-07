@@ -9,25 +9,26 @@ local content = require "content"
 windowWidth = love.graphics.getWidth()
 windowHeight = love.graphics.getHeight()
 
-local cameraPos = vector3(0.0, 0.0, 0.0)
-local cameraLookDir = vector3(0.0, 0.0, 0.0)
+local cameraPos = vector.newIdentity()
+local cameraLookDir = vector.newIdentity()
 
 local cameraRotY = 0.0
 local cameraRotX = 0.0
 
-local angle = 0.0
-
+local worldMat = {}
+local viewMat = {}
 local projMat = {}
 
-local anchor = {}
+local angle = 0.0
 
+local anchorMesh = {}
 local worldMesh = {}
 
 function love.load()
     love.graphics.setBackgroundColor(0.15, 0.15, 0.175, 1.0)
 
     --Load content
-    anchor.triangles = content.loadModel("models/anchor.obj")
+    anchorMesh.triangles = content.loadModel("models/anchor.obj")
     
     worldMesh.triangles = marching_cubes.generate()
     print("Marching cubes generated " .. #worldMesh.triangles .. " triangles")
@@ -81,11 +82,8 @@ function love.update(dt)
         cameraRotY = cameraRotY - 1.0 * dt
     end
 
-    --Set translation matrix
-    local transMat = matrix.newTranslation(0.0, 0.0, 7.0)
-
+    --Set world matrix
     worldMat = matrix.newIdentity()
-    worldMat = matrix.mulMatrix(worldMat, transMat)
 
     --Set view matrix
     local up = vector3(0.0, 1.0, 0.0)
@@ -106,20 +104,18 @@ function love.update(dt)
 end
 
 function love.draw(dt)
-    --drawTriangles(anchor.triangles)
+    --drawTriangles(anchorMesh.triangles)
     drawTriangles(worldMesh.triangles)
 end
 
 function drawTriangles(triangles)
     local trianglesToDraw = {}
 
-    for i = 1, #triangles, 1 do 
-        local t = copyTriangle(triangles[i])
-
-        local tTransformed = copyTriangle(t)
-        tTransformed[1] = vector.mulMatrix(t[1], worldMat)
-        tTransformed[2] = vector.mulMatrix(t[2], worldMat)
-        tTransformed[3] = vector.mulMatrix(t[3], worldMat)
+    for i = 1, #triangles do 
+        local tTransformed = copyTriangle(triangles[i])
+        tTransformed[1] = vector.mulMatrix(triangles[i][1], worldMat)
+        tTransformed[2] = vector.mulMatrix(triangles[i][2], worldMat)
+        tTransformed[3] = vector.mulMatrix(triangles[i][3], worldMat)
 
         --Calculate and normalize surface normals
         local lineA = vector.sub(tTransformed[2], tTransformed[1])
@@ -140,16 +136,15 @@ function drawTriangles(triangles)
             local dot = math.max(vector.dot(lightDirection, normal))
             tTransformed.color = vector.mul(tTransformed.color, 0.5 + dot * 0.5)
 
-            local tViewed = copyTriangle(tTransformed)
-            tViewed[1] = vector.mulMatrix(tViewed[1], viewMat)
-            tViewed[2] = vector.mulMatrix(tViewed[2], viewMat)
-            tViewed[3] = vector.mulMatrix(tViewed[3], viewMat)
+            tTransformed[1] = vector.mulMatrix(tTransformed[1], viewMat)
+            tTransformed[2] = vector.mulMatrix(tTransformed[2], viewMat)
+            tTransformed[3] = vector.mulMatrix(tTransformed[3], viewMat)
 
-            local clippedTriangles = triangle.clipAgainstPlane(vector3(0.0, 0.0, 0.1), vector3(0.0, 0.0, 1.0), copyTriangle(tViewed))
+            local clippedTriangles = triangle.clipAgainstPlane(vector3(0.0, 0.0, 0.1), vector3(0.0, 0.0, 1.0), tTransformed)
 
-            for i = 1, #clippedTriangles, 1 do 
+            for i = 1, #clippedTriangles do 
                 --Project triangle into 2D
-                local tProjected = copyTriangle(clippedTriangles[i])
+                local tProjected = clippedTriangles[i]
                 tProjected[1] = vector.mulMatrix(tProjected[1], projMat)
                 tProjected[2] = vector.mulMatrix(tProjected[2], projMat)
                 tProjected[3] = vector.mulMatrix(tProjected[3], projMat)
@@ -185,43 +180,44 @@ function drawTriangles(triangles)
         return avg1 > avg2
     end)
 
-    for i = 1, #trianglesToDraw, 1 do
-        local listOfTriangles = {}
+    for i = 1, #trianglesToDraw do
+        
+        local listOfTriangles = { trianglesToDraw[i] }
+
         local listOfClippedTriangles = {}
-        table.insert(listOfTriangles, copyTriangle(trianglesToDraw[i]))
 
         --Seems to work fine without this segment so I guess it could be removed for performance
-        ---[[ 
+        --[[ 
         --Loop once for every edge e of the screen
-        for e = 1, 4, 1 do 
-            for t = 1, #listOfTriangles, 1 do 
+        for e = 1, 4 do 
+            for t = 1, #listOfTriangles do 
                 local clipped = {}
 
                 if e == 1 then 
-                    clipped = triangle.clipAgainstPlane(vector3(0.0, 0.0, 0.0), vector3(0.0, 1.0, 0.0), copyTriangle(listOfTriangles[t]))
+                    clipped = triangle.clipAgainstPlane(vector3(0.0, 0.0, 0.0), vector3(0.0, 1.0, 0.0), listOfTriangles[t])
                 elseif e == 2 then
-                    clipped = triangle.clipAgainstPlane(vector3(0.0, windowHeight - 1.0, 0.0), vector3(0.0, -1.0, 0.0), copyTriangle(listOfTriangles[t]))
+                    clipped = triangle.clipAgainstPlane(vector3(0.0, windowHeight - 1.0, 0.0), vector3(0.0, -1.0, 0.0), listOfTriangles[t])
                 elseif e == 3 then
-                    clipped = triangle.clipAgainstPlane(vector3(0.0, 0.0, 0.0), vector3(1.0, 0.0, 0.0), copyTriangle(listOfTriangles[t]))
+                    clipped = triangle.clipAgainstPlane(vector3(0.0, 0.0, 0.0), vector3(1.0, 0.0, 0.0), listOfTriangles[t])
                 elseif e == 4 then
-                    clipped = triangle.clipAgainstPlane(vector3(windowWidth - 1.0, 0.0, 0.0), vector3(-1.0, 0.0, 0.0), copyTriangle(listOfTriangles[t]))
+                    clipped = triangle.clipAgainstPlane(vector3(windowWidth - 1.0, 0.0, 0.0), vector3(-1.0, 0.0, 0.0), listOfTriangles[t])
                 end
 
                 --Add every new triangle to a seperate list
-                for c = 1, #clipped, 1 do 
-                    table.insert(listOfClippedTriangles, copyTriangle(clipped[c]))
+                for c = 1, #clipped do 
+                    table.insert(listOfClippedTriangles, clipped[c])
                 end
             end
             --Empty list of original triangles
             listOfTriangles = {}
             --And fill it with clipped ones
-            for c = 1, #listOfClippedTriangles, 1 do
-                table.insert(listOfTriangles, copyTriangle(listOfClippedTriangles[c]))
+            for c = 1, #listOfClippedTriangles do
+                table.insert(listOfTriangles, listOfClippedTriangles[c])
             end
         end
         --]]
 
-        for t = 1, #listOfTriangles, 1 do 
+        for t = 1, #listOfTriangles do 
             draw2DTriangle(listOfTriangles[t])
         end
     end

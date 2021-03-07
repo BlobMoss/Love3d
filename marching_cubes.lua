@@ -3,8 +3,8 @@ local marching_cubes = {}
 local tri_table = require "tri_table"
 local vector = require "vector"
 
-local isoLevel = 0.0
-local pointsPerAxis = 20
+local isoLevel = 8.0
+local pointsPerAxis = 32
 local points = {}
 
 local triangles = {}
@@ -14,25 +14,28 @@ function indexOfPoint(x, y, z)
 end
 
 function interpolateVerts(v1, v2)
-    --Bring vertex closer to higher iso
+    --Bring vertex closer to higher iso values
     local t = (isoLevel - v1.W) / (v2.W - v1.W)
     --t = 0.5
-    return vector.add(v1, vector.mul(vector.sub(v2, v1), t))
+    local o = vector.sub(v2, v1)
+    o = vector.mul(o, t)
+    o = vector.add(v1, o)
+    return o
 end
 
 function marching_cubes.generate()
-    for x = 1, pointsPerAxis, 1 do 
-        for y = 1, pointsPerAxis, 1 do 
-            for z = 1, pointsPerAxis, 1 do 
+    for x = 1, pointsPerAxis do 
+        for y = 1, pointsPerAxis do 
+            for z = 1, pointsPerAxis do 
                 local v4 = vector3(x, y, z)
                 --This will be some proper world generation at some point but noise looks fine for now
-                v4.W = love.math.noise((x + love.math.random()) * 0.1, (y + love.math.random()) * 0.1, (z + love.math.random()) * 0.1) * 32 - 8 - y * 0.5
+                v4.W = love.math.noise((x + love.math.random()) * 0.1, (y + love.math.random()) * 0.1, (z + love.math.random()) * 0.1) * 32 - y * 0.5
                 points[indexOfPoint(x, y, z)] = v4
             end
         end
     end
 
-    for i = 1, #points, 1 do 
+    for i = 1, #points do 
         if (points[i] ~= nil) then 
             march(points[i])
         end

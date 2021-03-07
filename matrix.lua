@@ -4,13 +4,12 @@ local vector = require "vector"
 
 --Creates a 4 by 4 matrix with a default value
 function matrix.newIdentity()
-    local o = {
+    return {
         { 1.0, 0.0, 0.0, 0.0 },
         { 0.0, 1.0, 0.0, 0.0 },
         { 0.0, 0.0, 1.0, 0.0 },
         { 0.0, 0.0, 0.0, 1.0 }
     }
-    return o
 end
 
 function matrix.newRotationX(angle) --Angle in radians
@@ -74,8 +73,8 @@ end
 --Matrix by matrix multiplication
 function matrix.mulMatrix(m1, m2)
     local o = matrix.newIdentity()
-    for i = 1, 4, 1 do --columns
-        for j = 1, 4, 1 do --rows
+    for i = 1, 4 do --columns
+        for j = 1, 4 do --rows
             o[j][i] = m1[j][1] * m2[1][i] + m1[j][2] * m2[2][i] + m1[j][3] * m2[3][i] + m1[j][4] * m2[4][i];
         end
     end

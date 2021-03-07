@@ -3,7 +3,6 @@ local triangle = {}
 local vector = require "vector"
 
 --Function for copying table by value rather than by reference
---Why does lua work like this? I do not know
 function copyTriangle(t)
     return {
         copyVector3(t[1]), 
@@ -25,8 +24,6 @@ function triangle.clipAgainstPlane(planePoint, planeNormal, inputTri)
 
     local pointsInside = {}
     local pointsOutside = {}
-    local pointsInsideCount = 0
-    local pointsOutsideCount = 0
 
     local dist1 = triangle.pointDistanceToPlane(inputTri[1])
     local dist2 = triangle.pointDistanceToPlane(inputTri[2])
@@ -34,76 +31,71 @@ function triangle.clipAgainstPlane(planePoint, planeNormal, inputTri)
 
     --Points with a positive distance to the plane are inside it
     if dist1 >= 0.0 then 
-        table.insert(pointsInside, copyVector3(inputTri[1]))
-        pointsInsideCount = pointsInsideCount + 1
+        table.insert(pointsInside, inputTri[1])
     else 
-        table.insert(pointsOutside, copyVector3(inputTri[1]))
+        table.insert(pointsOutside, inputTri[1])
     end   
     
     if dist2 >= 0.0 then 
-        table.insert(pointsInside, copyVector3(inputTri[2]))
-        pointsInsideCount = pointsInsideCount + 1
+        table.insert(pointsInside, inputTri[2])
     else 
-        table.insert(pointsOutside, copyVector3(inputTri[2]))
+        table.insert(pointsOutside, inputTri[2])
     end
     
     if dist3 >= 0.0 then 
-        table.insert(pointsInside, copyVector3(inputTri[3]))
-        pointsInsideCount = pointsInsideCount + 1
+        table.insert(pointsInside, inputTri[3])
     else 
-        table.insert(pointsOutside, copyVector3(inputTri[3]))
+        table.insert(pointsOutside, inputTri[3])
     end
 
-    pointsOutsideCount = 3 - pointsInsideCount
-
     --No points inside plane means triangle can be discarded
-    if pointsInsideCount == 0 then
+    if #pointsInside == 0 then
         return {} 
     end
 
-    if pointsInsideCount == 3 then
+    if #pointsInside == 3 then
         --All points inside means that the entire triangle should remain intact
-        return { copyTriangle(inputTri) } 
+        return { inputTri } 
     end
 
-    if pointsInsideCount == 1 and pointsOutsideCount == 2 then
+    if #pointsInside == 1 and #pointsOutside == 2 then
         --This is to keep any other information like color data
-        local outputTri1 = copyTriangle(inputTri)
+        local outputTri1 = inputTri
  
         --The one point on the inside should be kept
-        outputTri1[1] = copyVector3(pointsInside[1])
+        outputTri1[1] = pointsInside[1]
 
         --The two other points should be intersecting the plane
-        outputTri1[2] = vector.intersectPlane(planePoint, planeNormal, copyVector3(pointsInside[1]), copyVector3(pointsOutside[1]))
-        outputTri1[3] = vector.intersectPlane(planePoint, planeNormal, copyVector3(pointsInside[1]), copyVector3(pointsOutside[2]))
+        outputTri1[2] = vector.intersectPlane(planePoint, planeNormal, pointsInside[1], pointsOutside[1])
+        outputTri1[3] = vector.intersectPlane(planePoint, planeNormal, pointsInside[1], pointsOutside[2])
 
-        return { copyTriangle(outputTri1) } 
+        return { outputTri1 } 
     end
 
-    if (pointsInsideCount == 2 and pointsOutsideCount == 1) then
+    if (#pointsInside == 2 and #pointsOutside == 1) then
         --This is to keep any other information like color data
-        local outputTri1 = copyTriangle(inputTri)
+        local outputTri1 = inputTri
         local outputTri2 = copyTriangle(inputTri)
 
         --First triangle:
 
         --Keep the two inside points for the first triangle
-        outputTri1[1] = copyVector3(pointsInside[1])
-        outputTri1[2] = copyVector3(pointsInside[2])
+        outputTri1[1] = pointsInside[1]
+        outputTri1[2] = pointsInside[2]
 
         --The last point should be the first intersection
-        outputTri1[3] = vector.intersectPlane(planePoint, planeNormal, copyVector3(pointsInside[1]), copyVector3(pointsOutside[1]))
+        outputTri1[3] = vector.intersectPlane(planePoint, planeNormal, pointsInside[1], pointsOutside[1])
 
         --Second triangle:
 
         --The first point should be the second point on the inside
-        outputTri2[1] = copyVector3(pointsInside[2])
+        outputTri2[1] = pointsInside[2]
 
         --The other two points are placed along the plane with one being already calculated
-        outputTri2[2] = copyVector3(outputTri1[3])
-        outputTri2[3] = vector.intersectPlane(planePoint, planeNormal, copyVector3(pointsInside[2]), copyVector3(pointsOutside[1]))
+        outputTri2[2] = outputTri1[3]
+        outputTri2[3] = vector.intersectPlane(planePoint, planeNormal, pointsInside[2], pointsOutside[1])
 
-        return { copyTriangle(outputTri1), copyTriangle(outputTri2) } 
+        return { outputTri1, outputTri2 } 
     end
 end
 
