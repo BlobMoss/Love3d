@@ -1,6 +1,12 @@
 # love3d
 Proof of concept exploring the third dimension and the marching cubes algorithm. 
 
+## Controls 
+
+W A S D - to move camera in X and Z
+
+ARROW KEYS - to rotate camera in X and Y
+
 ## On the horizon:
 So, I need to improve performance
 
