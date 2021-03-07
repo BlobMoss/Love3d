@@ -1,4 +1,7 @@
 # love3d
+Proof of concept exploring the third dimension and the marching cubes algorithm. 
+
+## On the horizon:
 So, I need to improve performance
 
 One dumb idea is to:
@@ -11,3 +14,7 @@ One dumb idea is to:
 6) draw those triangles on screen
 
 This is somehow faster??
+
+I would also like to add some kind of pill to tringle collision
+
+and a way to remove and place terrain
