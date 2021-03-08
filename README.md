@@ -5,7 +5,11 @@ Proof of concept exploring the third dimension and the marching cubes algorithm.
 
 W A S D - to move camera in X and Z
 
+LSHIFT and SPACE to move camera in Y
+
 ARROW KEYS - to rotate camera in X and Y
+
+(you do not want to rotate camera in Z, trust me)
 
 ## On the horizon:
 So, I need to improve performance
