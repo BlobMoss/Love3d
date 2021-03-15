@@ -4,12 +4,12 @@ local tri_table = require "tri_table"
 local vector = require "vector"
 
 local isoLevel = 8.0
-local pointsPerAxis = 32
+local pointsPerAxis = 24
 local points = {}
 
 local triangles = {}
 
-function indexOfPoint(x, y, z)
+local function indexOfPoint(x, y, z)
     return z * pointsPerAxis * pointsPerAxis + y * pointsPerAxis + x
 end
 

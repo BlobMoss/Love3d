@@ -6,8 +6,13 @@ local marching_cubes = require "marching_cubes"
 
 local content = require "content"
 
-windowWidth = love.graphics.getWidth()
-windowHeight = love.graphics.getHeight()
+WindowWidth = love.graphics.getWidth()
+WindowHeight = love.graphics.getHeight()
+
+WindowCentreX = WindowWidth * 0.5
+WindowCentreY = WindowHeight * 0.5
+
+MouseSensitivity = 0.002
 
 local cameraPos = vector.newIdentity()
 local cameraLookDir = vector.newIdentity()
@@ -19,12 +24,13 @@ local worldMat = {}
 local viewMat = {}
 local projMat = {}
 
-local angle = 0.0
-
 local anchorMesh = {}
 local worldMesh = {}
 
 function love.load()
+    love.mouse.setVisible(false)
+    love.mouse.setPosition(WindowCentreX, WindowCentreY)
+
     love.graphics.setBackgroundColor(0.15, 0.15, 0.175, 1.0)
 
     --Load content
@@ -35,13 +41,30 @@ function love.load()
 
     --Build projection matrix
 	local fov = 90.0
-	local aspectRatio = love.graphics.getWidth() / love.graphics.getHeight()
+	local aspectRatio = WindowWidth / WindowHeight
     local near = 0.1
 	local far = 1000.0
     projMat = matrix.newProjection(fov, aspectRatio, near, far)
 end
 
 function love.update(dt)
+    if love.keyboard.isDown("escape") then
+        love.event.quit() 
+    end
+    
+    --Camera rotation with mouse
+    local mouseX, mouseY = love.mouse.getPosition()
+
+    local deltaX = WindowCentreX - mouseX
+    local deltaY = WindowCentreY - mouseY
+
+    love.mouse.setPosition(WindowCentreX, WindowCentreY)
+
+    --I do not think dt is required here
+    cameraRotY = cameraRotY + deltaX * MouseSensitivity
+    cameraRotX = cameraRotX + deltaY * MouseSensitivity
+
+    --Camera movement with keyboard
     local up = vector3(0.0, 1.0, 0.0)
     local forward = vector.normalize(cameraLookDir)
     local right = vector.cross(up, forward)
@@ -67,19 +90,6 @@ function love.update(dt)
     end
     if love.keyboard.isDown("lshift") then
         cameraPos = vector.add(cameraPos, upVelocity)
-    end
-
-    if love.keyboard.isDown("up") then
-        cameraRotX = cameraRotX + 1.0 * dt
-    end
-    if love.keyboard.isDown("down") then
-        cameraRotX = cameraRotX - 1.0 * dt
-    end
-    if love.keyboard.isDown("left") then
-        cameraRotY = cameraRotY + 1.0 * dt
-    end
-    if love.keyboard.isDown("right") then
-        cameraRotY = cameraRotY - 1.0 * dt
     end
 
     --Set world matrix
@@ -159,12 +169,12 @@ function drawTriangles(triangles)
                 tProjected[2] = vector.add(tProjected[2], screenOffset)
                 tProjected[3] = vector.add(tProjected[3], screenOffset)
             
-                tProjected[1].X = tProjected[1].X * 0.5 * windowWidth
-                tProjected[1].Y = tProjected[1].Y * 0.5 * windowHeight
-                tProjected[2].X = tProjected[2].X * 0.5 * windowWidth
-                tProjected[2].Y = tProjected[2].Y * 0.5 * windowHeight
-                tProjected[3].X = tProjected[3].X * 0.5 * windowWidth
-                tProjected[3].Y = tProjected[3].Y * 0.5 * windowHeight
+                tProjected[1].X = tProjected[1].X * 0.5 * WindowWidth
+                tProjected[1].Y = tProjected[1].Y * 0.5 * WindowHeight
+                tProjected[2].X = tProjected[2].X * 0.5 * WindowWidth
+                tProjected[2].Y = tProjected[2].Y * 0.5 * WindowHeight
+                tProjected[3].X = tProjected[3].X * 0.5 * WindowWidth
+                tProjected[3].Y = tProjected[3].Y * 0.5 * WindowHeight
 
                 --Add triangle to list to draw later
                 table.insert(trianglesToDraw, tProjected)
