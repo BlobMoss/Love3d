@@ -64,6 +64,9 @@ function love.update(dt)
     cameraRotY = cameraRotY + deltaX * MouseSensitivity
     cameraRotX = cameraRotX + deltaY * MouseSensitivity
 
+    --Limit X rotation to not flip the screen
+    cameraRotX = math.min(math.max(cameraRotX, -math.pi * 0.49), math.pi * 0.49)
+
     --Camera movement with keyboard
     local up = vector3(0.0, 1.0, 0.0)
     local forward = vector.normalize(cameraLookDir)
