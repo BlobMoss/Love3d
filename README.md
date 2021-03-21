@@ -3,28 +3,22 @@ Proof of concept exploring the third dimension and the marching cubes algorithm.
 
 ## Controls 
 
-W A S D - to move camera in X and Z
+W A S D - to move the camera in the X and Z axis
 
-LSHIFT and SPACE to move camera in Y
+LSHIFT and SPACE - to move the camera in the Y axis
 
-ARROW KEYS - to rotate camera in X and Y
+THE MOUSE - can now be used to rotate the camera in the X and Y axis
 
-(you do not want to rotate camera in Z, trust me)
+(you do not want to rotate the camera in the Z axis, trust me!)
 
 ## On the horizon:
-So, I need to improve performance
 
-One dumb idea is to:
+Better performance is the highest priority as of now, and has been for a while...
 
-1) somehow pass 3D triangles as image data
-2) project them in a shader
-3) somehow return the 2D triangles as image data
-4) draw image on seperate canvas
-5) read color values of that canvas as 2D triangles
-6) draw those triangles on screen
+# Some interesting concepts
 
-This is somehow faster??
+## Marching cubes
 
-I would also like to add some kind of pill to tringle collision
+https://www.youtube.com/watch?v=M3iI2l0ltbE
 
-and a way to remove and place terrain
+--here i will likelt write a short discription of the algorithm
