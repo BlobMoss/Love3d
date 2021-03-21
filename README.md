@@ -19,9 +19,9 @@ Better performance is the highest priority as of now, and has been for a while..
 
 
 
-# Some interesting concepts
+## Some interesting concepts
 
-## Marching cubes
+### Marching cubes
 
 https://www.youtube.com/watch?v=M3iI2l0ltbE
 
