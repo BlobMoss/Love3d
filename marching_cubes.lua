@@ -1,15 +1,16 @@
 local marching_cubes = {}
 
-local tri_table = require "tri_table"
 local vector = require "vector"
 
+local tri_table = require "tri_table"
+
 local isoLevel = 8.0
-local pointsPerAxis = 24
+local pointsPerAxis = 32
 local points = {}
 
 local triangles = {}
 
-local function indexOfPoint(x, y, z)
+function indexOfPoint(x, y, z)
     return z * pointsPerAxis * pointsPerAxis + y * pointsPerAxis + x
 end
 
@@ -65,14 +66,9 @@ function march(v)
     local cubeIndex = 1
 
     --Generate 8 bit number based on which nodes have a value below the iso level
-    if cubeCorners[1].W < isoLevel then cubeIndex = cubeIndex + 1 end
-    if cubeCorners[2].W < isoLevel then cubeIndex = cubeIndex + 2 end
-    if cubeCorners[3].W < isoLevel then cubeIndex = cubeIndex + 4 end
-    if cubeCorners[4].W < isoLevel then cubeIndex = cubeIndex + 8 end
-    if cubeCorners[5].W < isoLevel then cubeIndex = cubeIndex + 16 end
-    if cubeCorners[6].W < isoLevel then cubeIndex = cubeIndex + 32 end
-    if cubeCorners[7].W < isoLevel then cubeIndex = cubeIndex + 64 end
-    if cubeCorners[8].W < isoLevel then cubeIndex = cubeIndex + 128 end
+    for i = 1, 8 do
+        if cubeCorners[i].W < isoLevel then cubeIndex = cubeIndex + math.pow(2, i - 1) end
+    end
 
     --Find which triangles correspond to that index
     local configuration = tri_table.triangulation[cubeIndex]

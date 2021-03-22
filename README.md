@@ -13,6 +13,10 @@ THE MOUSE - can now be used to rotate the camera in the X and Y axis
 
 (you do not want to rotate the camera in the Z axis, trust me!)
 
+ESCAPE - to close the program
+
+
+
 ## On the horizon:
 
 Better performance is the highest priority as of now, and has been for a while...

@@ -1,5 +1,6 @@
 local tri_table = {}
 
+--A table of 256 tables, each corresponding to an unique configuration of triangles
 tri_table.triangulation = {
     {},
     { 1, 9, 4 },
