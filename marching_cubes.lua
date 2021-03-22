@@ -1,6 +1,6 @@
 local marching_cubes = {}
 
-local vector = require "vector"
+local vector = require "math/vector"
 
 local tri_table = require "tri_table"
 

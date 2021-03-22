@@ -1,8 +1,7 @@
 local player = {}
 
-local vector = require "vector"
-local matrix = require "matrix"
-local triangle = require "triangle"
+local vector = require "math/vector"
+local matrix = require "math/matrix"
 
 local speed = 3.0
 local mouseSensitivity = 0.002
@@ -30,7 +29,7 @@ function player.update(dt)
     CameraRotX = CameraRotX + deltaY * mouseSensitivity
 
     --Limit X rotation to not flip the screen
-    CameraRotX = math.min(math.max(CameraRotX, -math.pi * 0.49), math.pi * 0.49)
+    CameraRotX = math.min(math.max(CameraRotX, -math.pi * 0.499), math.pi * 0.499)
 
     --Camera movement with keyboard
     local up = vector3(0.0, 1.0, 0.0)

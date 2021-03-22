@@ -1,8 +1,8 @@
 local graphics = {}
 
-local vector = require "vector"
-local matrix = require "matrix"
-local triangle = require "triangle"
+local vector = require "math/vector"
+local matrix = require "math/matrix"
+local triangle = require "math/triangle"
 
 --Matrices
 local worldMat = {}
@@ -120,7 +120,7 @@ function drawTriangles(triangles)
         draw2DTriangle(trianglesToDraw[i])
 
         --Seems to work fine without this segment so I guess it could be removed for performance
-        
+
         --[[ 
         local listOfTriangles = { trianglesToDraw[i] }
 

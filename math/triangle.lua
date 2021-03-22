@@ -1,6 +1,6 @@
 local triangle = {}
 
-local vector = require "vector"
+local vector = require "math/vector"
 
 --Function for copying table by value rather than by reference
 function copyTriangle(t)

@@ -1,6 +1,6 @@
 local matrix = {}
 
-local vector = require "vector"
+local vector = require "math/vector"
 
 --Creates a 4 by 4 matrix with a default value
 function matrix.newIdentity()

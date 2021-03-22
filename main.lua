@@ -1,7 +1,7 @@
 --Math
-local vector = require "vector"
-local matrix = require "matrix"
-local triangle = require "triangle"
+local vector = require "math/vector"
+local matrix = require "math/matrix"
+local triangle = require "math/triangle"
 
 --Modules
 local graphics = require "graphics"
