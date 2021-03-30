@@ -11,9 +11,11 @@ local marching_cubes = require "marching_cubes"
 
 local player = require "player"
 
+LG = love.graphics
+
 --Window information
-WindowWidth = love.graphics.getWidth()
-WindowHeight = love.graphics.getHeight()
+WindowWidth = LG.getWidth()
+WindowHeight = LG.getHeight()
 
 WindowCentreX = WindowWidth * 0.5
 WindowCentreY = WindowHeight * 0.5
@@ -35,7 +37,7 @@ function love.load()
     love.mouse.setVisible(false)
     love.mouse.setPosition(WindowCentreX, WindowCentreY)
 
-    love.graphics.setBackgroundColor(0.15, 0.15, 0.175, 1.0)
+    LG.setBackgroundColor(0.15, 0.15, 0.175, 1.0)
 
     --Load content
     anchorMesh.triangles = content.loadModel("models/anchor.obj")
@@ -59,8 +61,8 @@ end
 function love.draw(dt)
     graphics.drawMesh(worldMesh)
 
-    love.graphics.setColor(1.0, 1.0, 1.0)
-    love.graphics.print("Fps: " .. tostring(love.timer.getFPS()), 10, 10)
+    LG.setColor(1.0, 1.0, 1.0)
+    LG.print("Fps: " .. tostring(love.timer.getFPS()), 10, 10)
 end
 
 function love.focus(f)

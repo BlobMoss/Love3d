@@ -20,16 +20,6 @@ function vector.newIdentity()
     }
 end
 
---Function for copying table by value rather than by reference
-function copyVector3(v)
-    return { 
-        ["X"] = v.X, 
-        ["Y"] = v.Y, 
-        ["Z"] = v.Z,
-        ["W"] = v.W
-    }
-end
-
 function vector.add(v1, v2)
     return vector3(v1.X + v2.X, v1.Y + v2.Y, v1.Z + v2.Z)
 end
@@ -50,6 +40,7 @@ end
 function vector.dot(v1, v2)
     return v1.X * v2.X + v1.Y * v2.Y + v1.Z * v2.Z
 end
+local dot = vector.dot
 
 function vector.length(v)
     --Dot can also be used to raise each value to the power of 2
@@ -74,33 +65,31 @@ end
 --Vector by matrix multiplication
 function vector.mulMatrix(v, m)
     local o = vector.newIdentity()
-    o.X = v.X * m[1][1] + v.Y * m[2][1] + v.Z * m[3][1] + v.W * m[4][1]
-    o.Y = v.X * m[1][2] + v.Y * m[2][2] + v.Z * m[3][2] + v.W * m[4][2]
-    o.Z = v.X * m[1][3] + v.Y * m[2][3] + v.Z * m[3][3] + v.W * m[4][3]
-    o.W = v.X * m[1][4] + v.Y * m[2][4] + v.Z * m[3][4] + v.W * m[4][4]
+    o.X = v.X * m[1] + v.Y * m[2] + v.Z * m[3] + v.W * m[4]
+    o.Y = v.X * m[5] + v.Y * m[6] + v.Z * m[7] + v.W * m[8]
+    o.Z = v.X * m[9] + v.Y * m[10] + v.Z * m[11] + v.W * m[12]
+    o.W = v.X * m[13] + v.Y * m[14] + v.Z * m[15] + v.W * m[16]
     return o
 end
 
 --Returns point where line intersects plane
 function vector.intersectPlane(planePoint, planeNormal, lineStart, lineEnd)
     --Normalize normal just in case
-    planeNormal = vector.normalize(planeNormal)
+    local planeNormal = vector.normalize(planeNormal)
 
     --Dot working its magic
-    local dnp = -vector.dot(planeNormal, planePoint)
-    local dsn = vector.dot(lineStart, planeNormal)
-    local den = vector.dot(lineEnd, planeNormal)
+    local dot1 = -dot(planeNormal, planePoint)
+    local dot2 = dot(lineStart, planeNormal)
+    local dot3 = dot(lineEnd, planeNormal)
 
-    local t = (-dnp - dsn) / (den - dsn)
+    local t = (-dot1 - dot2) / (dot3 - dot2)
 
     --Full line is the line from start to end
     local fullLine = vector.sub(lineEnd, lineStart)
     --Cut line is the full line scaled by "t"
     local cutLine = vector.mul(fullLine, t)
     --Subtracting cut line from the full line gives point of intersection
-    local intersection = vector.add(lineStart, cutLine)
-
-    return intersection
+    return vector.add(lineStart, cutLine)
 end
 
 return vector

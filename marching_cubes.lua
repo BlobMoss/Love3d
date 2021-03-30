@@ -1,8 +1,9 @@
-local marching_cubes = {}
-
+--Math
 local vector = require "math/vector"
 
 local tri_table = require "tri_table"
+
+local marching_cubes = {}
 
 local isoLevel = 8.0
 local pointsPerAxis = 32

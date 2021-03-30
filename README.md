@@ -1,5 +1,5 @@
 # love3d
-Proof of concept exploring the third dimension and the marching cubes algorithm. 
+Love3d is a proof of concept exploring the third dimension and the marching cubes algorithm!
 
 
 
@@ -10,7 +10,6 @@ W A S D - to move the camera in the X and Z axis
 LSHIFT and SPACE - to move the camera in the Y axis
 
 THE MOUSE - can now be used to rotate the camera in the X and Y axis
-
 (you do not want to rotate the camera in the Z axis, trust me!)
 
 ESCAPE - to close the program
