@@ -1,21 +1,24 @@
-local player = {}
-
+--Math
 local vector = require "math/vector"
 local matrix = require "math/matrix"
 
+local player = {}
+
+local vector_add = vector.add
+local vector_sub = vector.sub
+
 local speed = 3.0
 local mouseSensitivity = 0.002
+
+local up = vector3(0.0, 1.0, 0.0)
+
+local isKeyDown = love.keyboard.isDown
 
 function player.load()
     
 end
 
 function player.update(dt)
-    --Only control player if the player is in the window
-    if (WindowFocused == false) then
-        return
-    end
-
     --Camera rotation with mouse
     local mouseX, mouseY = love.mouse.getPosition()
 
@@ -32,36 +35,35 @@ function player.update(dt)
     CameraRotX = math.min(math.max(CameraRotX, -math.pi * 0.499), math.pi * 0.499)
 
     --Camera movement with keyboard
-    local up = vector3(0.0, 1.0, 0.0)
     local forward = vector.normalize(CameraLookDirection)
     local right = vector.cross(up, forward)
 
     local movement = vector.newIdentity()
 
-    if love.keyboard.isDown("s") then
-        movement = vector.sub(movement, forward)
+    if isKeyDown("s") then
+        movement = vector_sub(movement, forward)
     end
-    if love.keyboard.isDown("w") then
-        movement = vector.add(movement, forward)
+    if isKeyDown("w") then
+        movement = vector_add(movement, forward)
     end
-    if love.keyboard.isDown("a") then
-        movement = vector.sub(movement, right)
+    if isKeyDown("a") then
+        movement = vector_sub(movement, right)
     end
-    if love.keyboard.isDown("d") then
-        movement = vector.add(movement, right)
+    if isKeyDown("d") then
+        movement = vector_add(movement, right)
     end
-    if love.keyboard.isDown("space") then
-        movement = vector.sub(movement, up)
+    if isKeyDown("space") then
+        movement = vector_sub(movement, up)
     end
-    if love.keyboard.isDown("lshift") then
-        movement = vector.add(movement, up)
+    if isKeyDown("lshift") then
+        movement = vector_add(movement, up)
     end
 
     if movement.X ~= 0.0 and movement.Y ~= 0.0 and movement.Z ~= 0.0 then
         movement = vector.normalize(movement)
     end
     movement = vector.mul(movement, speed * dt)
-    CameraPosition = vector.add(CameraPosition, movement)
+    CameraPosition = vector_add(CameraPosition, movement)
 end
 
 return player

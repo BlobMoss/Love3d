@@ -1,24 +1,25 @@
 local vector = {}
 
 --I guess this would be the equivalent of a c# constructor in löve2D
-function vector3(X, Y, Z)
+function vector3(x, y, z)
     return {
-        ["X"] = X,
-        ["Y"] = Y,
-        ["Z"] = Z,
-        ["W"] = 1.0
+        X = x,
+        Y = y,
+        Z = z,
+        W = 1.0
     }
 end
 
 --Creates a vector3 with a default value
 function vector.newIdentity()
     return {
-        ["X"] = 0.0,
-        ["Y"] = 0.0,
-        ["Z"] = 0.0,
-        ["W"] = 1.0
+        X = 0.0,
+        Y = 0.0,
+        Z = 0.0,
+        W = 1.0
     }
 end
+local newIdentity = vector.newIdentity
 
 function vector.add(v1, v2)
     return vector3(v1.X + v2.X, v1.Y + v2.Y, v1.Z + v2.Z)
@@ -49,13 +50,13 @@ end
 
 --Returns v with length of 1.0
 function vector.normalize(v)
-    local length = vector.length(v)
-    return vector.div(v, length)
+    local l = vector.length(v)
+    return vector.div(v, l)
 end
 
 --Vector used for getting the line with a 90 degree angle to bot v1 and v2
 function vector.cross(v1, v2)
-    local o = vector.newIdentity()
+    local o = newIdentity()
     o.X = v1.Y * v2.Z - v1.Z * v2.Y
     o.Y = v1.Z * v2.X - v1.X * v2.Z
     o.Z = v1.X * v2.Y - v1.Y * v2.X
@@ -64,7 +65,7 @@ end
 
 --Vector by matrix multiplication
 function vector.mulMatrix(v, m)
-    local o = vector.newIdentity()
+    local o = newIdentity()
     o.X = v.X * m[1] + v.Y * m[2] + v.Z * m[3] + v.W * m[4]
     o.Y = v.X * m[5] + v.Y * m[6] + v.Z * m[7] + v.W * m[8]
     o.Z = v.X * m[9] + v.Y * m[10] + v.Z * m[11] + v.W * m[12]
@@ -74,9 +75,6 @@ end
 
 --Returns point where line intersects plane
 function vector.intersectPlane(planePoint, planeNormal, lineStart, lineEnd)
-    --Normalize normal just in case
-    local planeNormal = vector.normalize(planeNormal)
-
     --Dot working its magic
     local dot1 = -dot(planeNormal, planePoint)
     local dot2 = dot(lineStart, planeNormal)

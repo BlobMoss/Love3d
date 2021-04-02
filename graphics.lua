@@ -14,16 +14,20 @@ local matrix_mulMatrix = matrix.mulMatrix
 
 --local projectionShader
 
+local trianglesToDraw = {}
+
 CameraLookDirection = vector.newIdentity()
 
+--Some constants:
 local up = vector3(0.0, 1.0, 0.0)
 
 local lightDirection = vector3(0.0, -1.0, -1.0)
 lightDirection = vector_normalize(lightDirection)
 
-local screenOffset = vector3(1.0, 1.0, 0.0)
+local cameraClipPlane = vector3(0.0, 0.0, 0.1)
+local cameraClipPlaneNormal = vector_normalize(cameraClipPlane)
 
-local cameraClipPlane = vector3(0.0, 0.0, 1.0)
+local screenOffset = vector3(1.0, 1.0, 0.0)
 
 --Matrices
 local worldMat = matrix.newIdentity()
@@ -62,6 +66,22 @@ function graphics.update(dt)
     viewMat = matrix.simpleInverse(cameraMat)
 end
 
+function graphics.draw()
+    --Sort triangles by average vertex depth as I do not feel like working with pixel depth
+    table.sort(trianglesToDraw, 
+    function(t1, t2)
+        local avg1 = (t1[1].Z + t1[2].Z + t1[3].Z) / 3
+        local avg2 = (t2[1].Z + t2[2].Z + t2[3].Z) / 3
+        return avg1 > avg2
+    end)
+    
+    for i = 1, #trianglesToDraw do
+        draw2DTriangle(trianglesToDraw[i])
+    end
+    
+    trianglesToDraw = {}
+end
+
 function graphics.drawMesh(mesh)
     drawTriangles(mesh.triangles)
 end
@@ -97,8 +117,6 @@ function drawTriangles(triangles)
         }
     end
     ]]
-
-    local trianglesToDraw = {}
     
     for i = 1, #triangles do 
         local tTransformed = copyTriangle(triangles[i])
@@ -127,7 +145,7 @@ function drawTriangles(triangles)
             tTransformed[3] = vector_mulMatrix(tTransformed[3], viewMat)
 
             --Clip triangles against screen to not render anything behind the camera
-            local clippedTriangles = triangle.clipAgainstPlane(cameraClipPlane, cameraClipPlane, tTransformed)
+            local clippedTriangles = triangle.clipAgainstPlane(cameraClipPlane, cameraClipPlaneNormal, tTransformed)
 
             for i = 1, #clippedTriangles do 
                 --Project triangle into 2D
@@ -156,58 +174,6 @@ function drawTriangles(triangles)
                 table.insert(trianglesToDraw, tProjected)
             end
         end
-    end
-
-    --Sort triangles by average vertex depth as I do not feel like working with pixel depth
-    table.sort(trianglesToDraw, 
-    function(t1, t2)
-        local avg1 = (t1[1].Z + t1[2].Z + t1[3].Z) / 3
-        local avg2 = (t2[1].Z + t2[2].Z + t2[3].Z) / 3
-        return avg1 > avg2
-    end)
-    
-    for i = 1, #trianglesToDraw do
-        draw2DTriangle(trianglesToDraw[i])
-
-        --Seems to work fine without this segment so I guess it could be removed for performance
-
-        --[[ 
-        local listOfTriangles = { trianglesToDraw[i] }
-
-        local listOfClippedTriangles = {}
-
-        --Loop once for every edge e of the screen
-        for e = 1, 4 do 
-            for t = 1, #listOfTriangles do 
-                local clipped = {}
-
-                if e == 1 then 
-                    clipped = triangle.clipAgainstPlane(vector3(0.0, 0.0, 0.0), vector3(0.0, 1.0, 0.0), listOfTriangles[t])
-                elseif e == 2 then
-                    clipped = triangle.clipAgainstPlane(vector3(0.0, WindowHeight - 1.0, 0.0), vector3(0.0, -1.0, 0.0), listOfTriangles[t])
-                elseif e == 3 then
-                    clipped = triangle.clipAgainstPlane(vector3(0.0, 0.0, 0.0), vector3(1.0, 0.0, 0.0), listOfTriangles[t])
-                elseif e == 4 then
-                    clipped = triangle.clipAgainstPlane(vector3(WindowWidth - 1.0, 0.0, 0.0), vector3(-1.0, 0.0, 0.0), listOfTriangles[t])
-                end
-
-                --Add every new triangle to a seperate list
-                for c = 1, #clipped do 
-                    table.insert(listOfClippedTriangles, clipped[c])
-                end
-            end
-            --Empty list of original triangles
-            listOfTriangles = {}
-            --And fill it with clipped ones
-            for c = 1, #listOfClippedTriangles do
-                table.insert(listOfTriangles, listOfClippedTriangles[c])
-            end
-        end
-        
-        for t = 1, #listOfTriangles do 
-            draw2DTriangle(listOfTriangles[t])
-        end
-        --]]
     end
 end
 
