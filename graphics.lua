@@ -61,22 +61,6 @@ function graphics.update(dt)
     viewMat = matrix.simpleInverse(cameraMat)
 end
 
-function graphics.draw()
-    --Sort triangles by average vertex depth as I do not feel like working with pixel depth
-    table.sort(trianglesToDraw, 
-    function(t1, t2)
-        local avg1 = (t1[1].Z + t1[2].Z + t1[3].Z) / 3
-        local avg2 = (t2[1].Z + t2[2].Z + t2[3].Z) / 3
-        return avg1 > avg2
-    end)
-    
-    for i = 1, #trianglesToDraw do
-        draw2DTriangle(trianglesToDraw[i])
-    end
-    
-    trianglesToDraw = {}
-end
-
 function graphics.drawMesh(mesh)
     drawTriangles(mesh.triangles)
 end
@@ -104,10 +88,22 @@ function drawTriangles(triangles)
             --Set color of each triangle based on similarity to light direction
             local dot = math.max(vector.dot(lightDirection, normal))
             tTransformed.color = vector.mul(tTransformed.color, 0.5 + dot * 0.5)
+            
+            local dx = tTransformed[1].X - CameraPosition.X
+            local dy = tTransformed[1].Z - CameraPosition.Z
+
+            local t1 = math.sqrt(dx * dx + dy * dy)
+            t1 = t1 / FogDistance - 0.5
+            t1 = math.max(math.min(t1, 1.0), 0.0)
+            local t2 = 1.0 - t1 
 
             tTransformed[1] = vector_mulMatrix(tTransformed[1], viewMat)
             tTransformed[2] = vector_mulMatrix(tTransformed[2], viewMat)
             tTransformed[3] = vector_mulMatrix(tTransformed[3], viewMat)
+
+            tTransformed.color.X = tTransformed.color.X * t2 + BackgroundColor.X * t1
+            tTransformed.color.Y = tTransformed.color.Y * t2 + BackgroundColor.Y * t1 
+            tTransformed.color.Z = tTransformed.color.Z * t2 + BackgroundColor.Z * t1
 
             --Clip triangles against screen to not render anything behind the camera
             local clippedTriangles = triangle.clipAgainstPlane(cameraClipPlane, cameraClipPlaneNormal, tTransformed)
@@ -140,6 +136,22 @@ function drawTriangles(triangles)
             end
         end
     end
+end
+
+function graphics.draw()
+    --Sort triangles by average vertex depth as I do not feel like working with pixel depth
+    table.sort(trianglesToDraw, 
+    function(t1, t2)
+        local avg1 = (t1[1].Z + t1[2].Z + t1[3].Z) / 3
+        local avg2 = (t2[1].Z + t2[2].Z + t2[3].Z) / 3
+        return avg1 > avg2
+    end)
+    
+    for i = 1, #trianglesToDraw do
+        draw2DTriangle(trianglesToDraw[i])
+    end
+    
+    trianglesToDraw = {}
 end
 
 function draw2DTriangle(t)

@@ -10,9 +10,6 @@ local chunks = {}
 
 ChunkWidth, Chunkheight, ChunkLength = 8, 24, 8
 
---This is the value to decrease if you need more performance
-local renderDistance = 2.5
-
 local renderedChunks = {}
 
 function world.load()
@@ -29,11 +26,11 @@ function world.update()
 
     local originX, originZ = CameraPosition.X / ChunkWidth, CameraPosition.Z / ChunkLength
     --Loop through area close to camera position
-    for x = floor(originX - renderDistance), floor(originX + renderDistance) do
+    for x = floor(originX - RenderDistance), floor(originX + RenderDistance) do
 
-        for z = floor(originZ - renderDistance), floor(originZ + renderDistance) do
+        for z = floor(originZ - RenderDistance), floor(originZ + RenderDistance) do
             --Only render chunks with a distance less than render distance to camera position
-            if math.sqrt(pow(x - originX, 2) + pow(z - originZ, 2)) < renderDistance then
+            if math.sqrt(pow(x - originX, 2) + pow(z - originZ, 2)) < RenderDistance then
                 --Make sure chunk is within world
                 if (chunks[x] ~= nil) then
                     --Create chunks that do not exist but should

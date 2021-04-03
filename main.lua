@@ -19,6 +19,12 @@ WindowHeight = LG.getHeight()
 WindowCentreX = WindowWidth * 0.5
 WindowCentreY = WindowHeight * 0.5
 
+BackgroundColor = vector3(0.15, 0.15, 0.175)
+FogDistance = 10.0
+
+--This is the value to decrease if you need more performance
+RenderDistance = 2.2
+
 --Camera variables
 CameraPosition = vector.newIdentity()
 CameraLookDirection = vector.newIdentity()
@@ -32,9 +38,8 @@ function love.load()
     love.mouse.setVisible(false)
     love.mouse.setPosition(WindowCentreX, WindowCentreY)
 
-    LG.setBackgroundColor(0.15, 0.15, 0.175, 1.0)
-
-    --Load content
+    LG.setBackgroundColor(BackgroundColor.X, BackgroundColor.Y, BackgroundColor.Z)
+ 
     --anchorMesh.triangles = content.loadModel("models/anchor.obj")
     
     world.load()
