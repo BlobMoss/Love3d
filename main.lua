@@ -26,9 +26,7 @@ CameraLookDirection = vector.newIdentity()
 CameraRotY = 0.0
 CameraRotX = 0.0
 
---Meshes
 --local anchorMesh = {}
---local worldMesh = {}
 
 function love.load()
     love.mouse.setVisible(false)
@@ -39,12 +37,9 @@ function love.load()
     --Load content
     --anchorMesh.triangles = content.loadModel("models/anchor.obj")
     
-    --worldMesh.triangles = marching_cubes.generate()
-    --print("Marching cubes generated " .. #worldMesh.triangles .. " triangles")
+    world.load()
 
     graphics.load()
-
-    world.load()
 end
 
 function love.update(dt)

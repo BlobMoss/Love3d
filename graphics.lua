@@ -5,6 +5,7 @@ local triangle = require "math/triangle"
 
 local graphics = {}
 
+--This is a way to minimize loop-ups and increase performance
 local vector_add = vector.add
 local vector_sub = vector.sub
 local vector_div = vector.div
@@ -12,13 +13,9 @@ local vector_normalize = vector.normalize
 local vector_mulMatrix = vector.mulMatrix
 local matrix_mulMatrix = matrix.mulMatrix
 
---local projectionShader
-
 local trianglesToDraw = {}
 
-CameraLookDirection = vector.newIdentity()
-
---Some constants:
+--Constants
 local up = vector3(0.0, 1.0, 0.0)
 
 local lightDirection = vector3(0.0, -1.0, -1.0)
@@ -41,8 +38,6 @@ function graphics.load()
     local near = 0.1
 	local far = 1000.0
     projMat = matrix.newProjection(fov, aspectRatio, near, far)
-
-    --projectionShader = LG.newShader("projection.glsl")
 end
 
 function graphics.update(dt)
@@ -87,37 +82,7 @@ function graphics.drawMesh(mesh)
 end
 
 function drawTriangles(triangles)
-    --[[
-    local data = love.image.newImageData(3, #triangles, "rgba32f")
-    for i = 1, #triangles do
-        local t = triangles[i]
-        data:setPixel(0, i - 1, t[1].X, t[1].Y, t[1].Z, 1.0)
-        data:setPixel(1, i - 1, t[2].X, t[2].Y, t[2].Z, 1.0)
-        data:setPixel(2, i - 1, t[3].X, t[3].Y, t[3].Z, 1.0)
-    end
-    local image = LG.newImage(data)
-    local canvas = LG.newCanvas(3, #triangles, { format = "rgba32f" } )
 
-    LG.setCanvas(canvas)
-    LG.setShader(projectionShader)
-    LG.draw(image)
-    LG.setShader()
-    LG.setCanvas()
-
-    local canvasData = canvas:newImageData("rgba32f")
-
-    local newTriangles = {}
-
-    for i = 1, #triangles do
-        newTriangles[i] = {
-            vector3(canvasData:getPixel(0, i - 1)),
-            vector3(canvasData:getPixel(1, i - 1)),
-            vector3(canvasData:getPixel(2, i - 1)),
-            color = copyVector3(triangles[i].color)
-        }
-    end
-    ]]
-    
     for i = 1, #triangles do 
         local tTransformed = copyTriangle(triangles[i])
         tTransformed[1] = vector_mulMatrix(tTransformed[1], worldMat)

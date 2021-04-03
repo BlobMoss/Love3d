@@ -5,22 +5,16 @@ local tri_table = require "tri_table"
 
 local marching_cubes = {}
 
+--Points with a value lesser than the surface value are considered to be inside the mesh
 local surfaceLevel = 8.0
---local pointsPerAxis = 16
 
 local triangles = {}
 local points = {}
 
---[[
-function indexOfPoint(x, y, z)
-    return z * pointsPerAxis * pointsPerAxis + y * pointsPerAxis + x
-end
-]]
-
 function interpolateVerts(v1, v2)
-    --Bring vertex closer to higher surface values
+    --Bring vertex closer to points higher values
     local t = (surfaceLevel - v1.W) / (v2.W - v1.W)
-    --t = 0.5 no interpolation
+    --t = 0.5 --for no interpolation
     local o = vector.sub(v2, v1)
     o = vector.mul(o, t)
     o = vector.add(v1, o)
@@ -36,6 +30,7 @@ function marching_cubes.generate(offsetX, offsetZ)
         for y = 0, Chunkheight do 
             points[x][y] = {}
             for z = offsetZ, ChunkLength + offsetZ do 
+                --Points are 4D vectors with W being the value of the point
                 local point = vector3(x, y, z)
 
                 point.W = generatePointValue(x, y, z)
@@ -44,20 +39,6 @@ function marching_cubes.generate(offsetX, offsetZ)
             end
         end
     end
-
-    --[[
-    for x = 1, pointsPerAxis do 
-        for y = 1, pointsPerAxis do 
-            for z = 1, pointsPerAxis do 
-                local point = vector3(x, y, z)
-
-                point.W = generatePointValue(x + offsetX, y, z + offsetZ)
-
-                points[indexOfPoint(x, y, z)] = point
-            end
-        end
-    end
-    ]]
 
     for x = offsetX, ChunkWidth + offsetX - 1 do 
         for y = 0, Chunkheight - 1 do 
@@ -88,7 +69,6 @@ function noise(x, y, z, frequency, amplitude)
 end
 
 function march(point)
-
     --Create a table containing ever corner of a cube
     local cubeCorners = {
         points[point.X]    [point.Y]    [point.Z],
@@ -111,6 +91,7 @@ function march(point)
 
     --Find which triangles correspond to that index
     local configuration = tri_table.triangulation[cubeIndex]
+    --Vertices are stored in groups of 3 to form triangles
     for i = 0, #configuration - 1, 3 do 
         local a1 = tri_table.cornerIndexAFromEdge[tri_table.triangulation[cubeIndex][i + 1]]
         local b1 = tri_table.cornerIndexBFromEdge[tri_table.triangulation[cubeIndex][i + 1]]
