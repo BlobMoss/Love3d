@@ -6,16 +6,18 @@ local world = {}
 
 WorldWidth, WorldLength = 256, 256
 
-chunks = {}
+Chunks = {}
 
-ChunkWidth, Chunkheight, ChunkLength = 8, 24, 8
+ChunkWidth, Chunkheight, ChunkLength = 8, 32, 8
 
 local renderedChunks = {}
 
 function world.load()
+    Seed = love.math.random() * 1000000.0
+
     --Initialize chunk grid with the center at [0, 0], the one benefit of lua!
     for x = -WorldWidth / 2, WorldWidth / 2 do 
-        chunks[x] = {}
+        Chunks[x] = {}
     end
 end
 
@@ -29,16 +31,16 @@ function world.update()
     for x = floor(originX - RenderDistance), floor(originX + RenderDistance) do
 
         for z = floor(originZ - RenderDistance), floor(originZ + RenderDistance) do
-            --Only render chunks with a distance less than render distance to camera position
-            if math.sqrt(pow(x - originX, 2) + pow(z - originZ, 2)) < RenderDistance then
+            --Only render Chunks with a distance less than render distance to camera position
+            if math.sqrt(pow(x - originX, 2.0) + pow(z - originZ, 2.0)) < RenderDistance then
                 --Make sure chunk is within world
-                if (chunks[x] ~= nil) then
-                    --Create chunks that do not exist but should
-                    if chunks[x][z] == nil then
-                        chunks[x][z] = newChunk(x, z)
+                if (Chunks[x] ~= nil) then
+                    --Create Chunks that do not exist but should
+                    if Chunks[x][z] == nil then
+                        Chunks[x][z] = newChunk(x, z)
                     else
                         --Add them to a table for later drawing
-                        table.insert(renderedChunks, chunks[x][z])
+                        table.insert(renderedChunks, Chunks[x][z])
                     end
                 end
             end
@@ -58,25 +60,26 @@ function newChunk(x, z)
     chunk.Z = z
     marching_cubes.generatePoints(chunk)
     chunk.updateNeeded = true
+    updateNeighbors(x, z)
     return chunk
 end
 
 function world.setPointValue(x, y, z, w)
     chunkX, chunkZ = floor(x / ChunkWidth), floor(z / ChunkLength)
     pointX, pointY, pointZ = floor(x % ChunkWidth), floor(y), floor(z % ChunkLength)
-    local chunk = chunks[chunkX][chunkZ]
+    local chunk = Chunks[chunkX][chunkZ]
     local point = chunk.points[pointX][pointY][pointZ]
     point.W = point.W + w
-    
+
     chunk.updateNeeded = true
     updateNeighbors(chunkX, chunkZ)
 end
 
 function updateNeighbors(x, z)
-    chunks[x + 1][z].updateNeeded = true
-    chunks[x - 1][z].updateNeeded = true
-    chunks[x][z + 1].updateNeeded = true
-    chunks[x][z - 1].updateNeeded = true
+    if Chunks[x + 1][z] ~= nil then Chunks[x + 1][z].updateNeeded = true end
+    if Chunks[x - 1][z] ~= nil then Chunks[x - 1][z].updateNeeded = true end
+    if Chunks[x][z + 1] ~= nil then Chunks[x][z + 1].updateNeeded = true end
+    if Chunks[x][z - 1] ~= nil then Chunks[x][z - 1].updateNeeded = true end
 end
 
 function world.drawChunks()

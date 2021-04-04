@@ -66,7 +66,6 @@ function graphics.drawMesh(mesh)
 end
 
 function drawTriangles(triangles)
-
     for i = 1, #triangles do 
         local tTransformed = copyTriangle(triangles[i])
         tTransformed[1] = vector_mulMatrix(tTransformed[1], worldMat)
@@ -90,9 +89,9 @@ function drawTriangles(triangles)
             tTransformed.color = vector.mul(tTransformed.color, 0.5 + dot * 0.5)
             
             local dx = tTransformed[1].X - CameraPosition.X
-            local dy = tTransformed[1].Z - CameraPosition.Z
+            local dz = tTransformed[1].Z - CameraPosition.Z
 
-            local t1 = math.sqrt(dx * dx + dy * dy)
+            local t1 = math.sqrt(dx * dx + dz * dz)
             t1 = t1 / FogDistance - 0.5
             t1 = math.max(math.min(t1, 1.0), 0.0)
             local t2 = 1.0 - t1 

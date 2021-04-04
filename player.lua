@@ -10,6 +10,7 @@ local vector_add = vector.add
 local vector_sub = vector.sub
 
 local isKeyDown = love.keyboard.isDown
+local isMouseDown = love.mouse.isDown
 
 local speed = 3.0
 local mouseSensitivity = 0.002
@@ -24,8 +25,6 @@ function player.update(dt)
     handleMovement(dt)
 
     handlePainting(dt)
-
-    
 end
 
 function handleMovement(dt)
@@ -77,20 +76,24 @@ function handleMovement(dt)
 end
 
 function handlePainting(dt)
-    if isKeyDown("o") then
-        paint(2.0, dt)
-    end
-end
+    if isMouseDown(1) or isMouseDown(2) then
+        local paintPosition = vector.add(CameraPosition, vector.mul(CameraLookDirection, 4.0))
+        paintPosition = vector.add(paintPosition, vector3(0.5, 0.5, 0.5))
 
-function paint(radius, dt)
-    for x = -radius, radius do
-        for y = -radius, radius do
-            for z = -radius, radius do
-                
+        local radius = 1.25
+        for x = -radius, radius do 
+            for y = -radius, radius do 
+                for z = -radius, radius do 
+                    local dist = math.sqrt(x * x + y * y + z * z)
+                    if (isMouseDown(1)) then 
+                        world.setPointValue(paintPosition.X + x, paintPosition.Y + y, paintPosition.Z + z, math.min((radius - dist) * -40.0 * dt, 0.0))
+                    else
+                        world.setPointValue(paintPosition.X + x, paintPosition.Y + y, paintPosition.Z + z, math.max((radius - dist) * 40.0 * dt, 0.0))
+                    end
+                end
             end
         end
     end
-    world.setPointValue(CameraPosition.X, CameraPosition.Y, CameraPosition.Z, -30.0 * dt)
 end
 
 return player

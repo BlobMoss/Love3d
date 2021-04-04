@@ -1,3 +1,5 @@
+--THIS WILL BE SPLIT UP INTO A CHUNK.LUA AS WELL
+
 --Math
 local vector = require "math/vector"
 
@@ -33,13 +35,14 @@ function generatePointValue(x, y, z)
     local value = 0.0
     value = value + noise(x, y, z, 0.01, 0.7) --General shape
     value = value + noise(x, y, z, 0.15, 0.7) --Details
-    value = value * 16 - y * 0.5 --More mass further down
+    value = value * 18 - y * 0.5 --More mass further down
     return value
 end
 
 function noise(x, y, z, frequency, amplitude)
+    --The noise sampling can be offset by a random number to generate a new world every time
     return love.math.noise(
-        x * frequency, 
+        x * frequency + Seed, 
         y * frequency, 
         z * frequency
     ) * amplitude
@@ -53,11 +56,11 @@ function marching_cubes.generateTriangles(chunk)
     for x = 0, ChunkWidth do 
         for y = 0, Chunkheight - 1 do 
             for z = 0, ChunkLength do 
-                if x == ChunkWidth and chunks[chunk.X + 1][chunk.Z] ~= nil then
-                    points[x][y][z] = chunks[chunk.X + 1][chunk.Z].points[0][y][z]
+                if x == ChunkWidth and Chunks[chunk.X + 1][chunk.Z] ~= nil then
+                    points[x][y][z] = Chunks[chunk.X + 1][chunk.Z].points[0][y][z]
                 end
-                if z == ChunkLength and chunks[chunk.X][chunk.Z + 1] ~= nil then
-                    points[x][y][z] = chunks[chunk.X][chunk.Z + 1].points[x][y][0]
+                if z == ChunkLength and Chunks[chunk.X][chunk.Z + 1] ~= nil then
+                    points[x][y][z] = Chunks[chunk.X][chunk.Z + 1].points[x][y][0]
                 end
                 if x ~= ChunkWidth and z ~= ChunkLength then 
                     march(x, y, z)
