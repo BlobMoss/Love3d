@@ -8,47 +8,24 @@ local marching_cubes = {}
 --Points with a value lesser than the surface value are considered to be inside the mesh
 local surfaceLevel = 8.0
 
-local triangles = {}
-local points = {}
+function marching_cubes.generatePoints(chunk)
+    local points = {}
 
-function interpolateVerts(v1, v2)
-    --Bring vertex closer to points higher values
-    local t = (surfaceLevel - v1.W) / (v2.W - v1.W)
-    --t = 0.5 --for no interpolation
-    local o = vector.sub(v2, v1)
-    o = vector.mul(o, t)
-    o = vector.add(v1, o)
-    return o
-end
-
-function marching_cubes.generate(offsetX, offsetZ)
-    triangles = {}
-    points = {}
-
-    for x = offsetX, ChunkWidth + offsetX do 
+    for x = 0, ChunkWidth do 
         points[x] = {}
         for y = 0, Chunkheight do 
             points[x][y] = {}
-            for z = offsetZ, ChunkLength + offsetZ do 
-                --Points are 4D vectors with W being the value of the point
-                local point = vector3(x, y, z)
+            for z = 0, ChunkLength do 
+                local point = vector3(x + ChunkWidth * chunk.X, y, z + ChunkLength * chunk.Z)
 
-                point.W = generatePointValue(x, y, z)
+                point.W = generatePointValue(x + ChunkWidth * chunk.X, y, z + ChunkLength * chunk.Z)
 
                 points[x][y][z] = point
             end
         end
     end
 
-    for x = offsetX, ChunkWidth + offsetX - 1 do 
-        for y = 0, Chunkheight - 1 do 
-            for z = offsetZ, ChunkLength + offsetZ - 1 do 
-                march(points[x][y][z])
-            end
-        end
-    end
-
-    return triangles
+    chunk.points = points
 end
 
 function generatePointValue(x, y, z)
@@ -68,17 +45,41 @@ function noise(x, y, z, frequency, amplitude)
     ) * amplitude
 end
 
-function march(point)
+function marching_cubes.generateTriangles(chunk)
+    triangles = {}
+
+    points = chunk.points
+
+    for x = 0, ChunkWidth do 
+        for y = 0, Chunkheight - 1 do 
+            for z = 0, ChunkLength do 
+                if x == ChunkWidth and chunks[chunk.X + 1][chunk.Z] ~= nil then
+                    points[x][y][z] = chunks[chunk.X + 1][chunk.Z].points[0][y][z]
+                end
+                if z == ChunkLength and chunks[chunk.X][chunk.Z + 1] ~= nil then
+                    points[x][y][z] = chunks[chunk.X][chunk.Z + 1].points[x][y][0]
+                end
+                if x ~= ChunkWidth and z ~= ChunkLength then 
+                    march(x, y, z)
+                end
+            end
+        end
+    end
+    
+    chunk.triangles = triangles
+end
+
+function march(x, y, z)
     --Create a table containing ever corner of a cube
     local cubeCorners = {
-        points[point.X]    [point.Y]    [point.Z],
-        points[point.X + 1][point.Y]    [point.Z],
-        points[point.X + 1][point.Y]    [point.Z + 1],
-        points[point.X]    [point.Y]    [point.Z + 1],
-        points[point.X]    [point.Y + 1][point.Z],
-        points[point.X + 1][point.Y + 1][point.Z],
-        points[point.X + 1][point.Y + 1][point.Z + 1],
-        points[point.X]    [point.Y + 1][point.Z + 1],
+        points[x    ][y    ][z    ],
+        points[x + 1][y    ][z    ],
+        points[x + 1][y    ][z + 1],
+        points[x    ][y    ][z + 1],
+        points[x    ][y + 1][z    ],
+        points[x + 1][y + 1][z    ],
+        points[x + 1][y + 1][z + 1],
+        points[x    ][y + 1][z + 1],
     }
 
     --Generate 8 bit number (cubeIndex) based on which nodes have a value below the surface level
@@ -106,10 +107,20 @@ function march(point)
             interpolateVerts(cubeCorners[a1], cubeCorners[b1]),
             interpolateVerts(cubeCorners[a2], cubeCorners[b2]),
             interpolateVerts(cubeCorners[a3], cubeCorners[b3]),
-            color = vector3(point.Y / Chunkheight, 0.3, 0.3)
+            color = vector3(y / Chunkheight, 0.3, 0.3)
         }
         table.insert(triangles, triangle)
     end
+end
+
+function interpolateVerts(v1, v2)
+    --Bring vertex closer to points higher values
+    local t = (surfaceLevel - v1.W) / (v2.W - v1.W)
+    --t = 0.5 --(Enable for no interpolation)
+    local o = vector.sub(v2, v1)
+    o = vector.mul(o, t)
+    o = vector.add(v1, o)
+    return o
 end
 
 return marching_cubes

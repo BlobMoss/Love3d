@@ -6,7 +6,7 @@ local world = {}
 
 WorldWidth, WorldLength = 256, 256
 
-local chunks = {}
+chunks = {}
 
 ChunkWidth, Chunkheight, ChunkLength = 8, 24, 8
 
@@ -24,7 +24,7 @@ local pow = math.pow
 function world.update()
     renderedChunks = {}
 
-    local originX, originZ = CameraPosition.X / ChunkWidth, CameraPosition.Z / ChunkLength
+    local originX, originZ = CameraPosition.X / ChunkWidth - 0.5, CameraPosition.Z / ChunkLength - 0.5
     --Loop through area close to camera position
     for x = floor(originX - RenderDistance), floor(originX + RenderDistance) do
 
@@ -37,19 +37,46 @@ function world.update()
                     if chunks[x][z] == nil then
                         chunks[x][z] = newChunk(x, z)
                     else
-                    --Add them to a table for later drawing
-                    table.insert(renderedChunks, chunks[x][z])
+                        --Add them to a table for later drawing
+                        table.insert(renderedChunks, chunks[x][z])
                     end
                 end
             end
+        end
+    end
+    for i = 1, #renderedChunks do
+        if renderedChunks[i].updateNeeded == true then
+            marching_cubes.generateTriangles(renderedChunks[i])
+            renderedChunks[i].updateNeeded = false
         end
     end
 end
 
 function newChunk(x, z)
     local chunk = {} 
-    chunk.triangles = marching_cubes.generate(x * ChunkWidth, z * ChunkLength)
+    chunk.X = x
+    chunk.Z = z
+    marching_cubes.generatePoints(chunk)
+    chunk.updateNeeded = true
     return chunk
+end
+
+function world.setPointValue(x, y, z, w)
+    chunkX, chunkZ = floor(x / ChunkWidth), floor(z / ChunkLength)
+    pointX, pointY, pointZ = floor(x % ChunkWidth), floor(y), floor(z % ChunkLength)
+    local chunk = chunks[chunkX][chunkZ]
+    local point = chunk.points[pointX][pointY][pointZ]
+    point.W = point.W + w
+    
+    chunk.updateNeeded = true
+    updateNeighbors(chunkX, chunkZ)
+end
+
+function updateNeighbors(x, z)
+    chunks[x + 1][z].updateNeeded = true
+    chunks[x - 1][z].updateNeeded = true
+    chunks[x][z + 1].updateNeeded = true
+    chunks[x][z - 1].updateNeeded = true
 end
 
 function world.drawChunks()

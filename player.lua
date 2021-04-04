@@ -2,23 +2,33 @@
 local vector = require "math/vector"
 local matrix = require "math/matrix"
 
+local world = require "world/world"
+
 local player = {}
 
 local vector_add = vector.add
 local vector_sub = vector.sub
+
+local isKeyDown = love.keyboard.isDown
 
 local speed = 3.0
 local mouseSensitivity = 0.002
 
 local up = vector3(0.0, 1.0, 0.0)
 
-local isKeyDown = love.keyboard.isDown
-
 function player.load()
     
 end
 
 function player.update(dt)
+    handleMovement(dt)
+
+    handlePainting(dt)
+
+    
+end
+
+function handleMovement(dt)
     --Camera rotation with mouse
     local mouseX, mouseY = love.mouse.getPosition()
 
@@ -64,6 +74,23 @@ function player.update(dt)
     end
     movement = vector.mul(movement, speed * dt)
     CameraPosition = vector_add(CameraPosition, movement)
+end
+
+function handlePainting(dt)
+    if isKeyDown("o") then
+        paint(2.0, dt)
+    end
+end
+
+function paint(radius, dt)
+    for x = -radius, radius do
+        for y = -radius, radius do
+            for z = -radius, radius do
+                
+            end
+        end
+    end
+    world.setPointValue(CameraPosition.X, CameraPosition.Y, CameraPosition.Z, -30.0 * dt)
 end
 
 return player
