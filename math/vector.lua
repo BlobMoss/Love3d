@@ -37,6 +37,15 @@ function vector.div(v, n)
     return vector3(v.X / n, v.Y / n, v.Z / n)
 end
 
+local floor = math.floor
+function vector.floor(v)
+    return vector3(floor(v.X), floor(v.Y), floor(v.Z))
+end
+
+function vector.round(v)
+    return vector3(floor(v.X + 0.5), floor(v.Y + 0.5), floor(v.Z) + 0.5)
+end
+
 --Returns a measure of similarity between v1 and v2 (this thing is magical)
 function vector.dot(v1, v2)
     return v1.X * v2.X + v1.Y * v2.Y + v1.Z * v2.Z

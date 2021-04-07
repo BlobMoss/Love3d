@@ -69,10 +69,20 @@ function world.setPointValue(x, y, z, w)
     pointX, pointY, pointZ = floor(x % ChunkWidth), floor(y), floor(z % ChunkLength)
     local chunk = Chunks[chunkX][chunkZ]
     local point = chunk.points[pointX][pointY][pointZ]
+
     point.W = point.W + w
 
     chunk.updateNeeded = true
     updateNeighbors(chunkX, chunkZ)
+end
+
+function world.getPointValue(x, y, z)
+    chunkX, chunkZ = floor(x / ChunkWidth), floor(z / ChunkLength)
+    pointX, pointY, pointZ = floor(x % ChunkWidth), floor(y), floor(z % ChunkLength)
+    local chunk = Chunks[chunkX][chunkZ]
+    local point = chunk.points[pointX][pointY][pointZ]
+    
+    return point.W
 end
 
 function updateNeighbors(x, z)

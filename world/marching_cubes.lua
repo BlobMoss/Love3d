@@ -8,7 +8,7 @@ local tri_table = require "tri_table"
 local marching_cubes = {}
 
 --Points with a value lesser than the surface value are considered to be inside the mesh
-local surfaceLevel = 8.0
+SurfaceLevel = 8.0
 
 function marching_cubes.generatePoints(chunk)
     local points = {}
@@ -32,6 +32,9 @@ end
 
 function generatePointValue(x, y, z)
     --This is where the world generation happens!
+    if y == 0 then return 10.0 end
+    if y == Chunkheight then return 0.0 end
+    
     local value = 0.0
     value = value + noise(x, y, z, 0.01, 0.7) --General shape
     value = value + noise(x, y, z, 0.15, 0.7) --Details
@@ -88,7 +91,7 @@ function march(x, y, z)
     --Generate 8 bit number (cubeIndex) based on which nodes have a value below the surface level
     local cubeIndex = 1
     for i = 1, 8 do
-        if cubeCorners[i].W < surfaceLevel then 
+        if cubeCorners[i].W < SurfaceLevel then 
             cubeIndex = cubeIndex + math.pow(2, i - 1) 
         end
     end
@@ -118,7 +121,7 @@ end
 
 function interpolateVerts(v1, v2)
     --Bring vertex closer to points higher values
-    local t = (surfaceLevel - v1.W) / (v2.W - v1.W)
+    local t = (SurfaceLevel - v1.W) / (v2.W - v1.W)
     --t = 0.5 --(Enable for no interpolation)
     local o = vector.sub(v2, v1)
     o = vector.mul(o, t)

@@ -24,7 +24,9 @@ end
 function player.update(dt)
     handleMovement(dt)
 
-    handlePainting(dt)
+    if isMouseDown(1) or isMouseDown(2) then
+        handlePainting()
+    end
 end
 
 function handleMovement(dt)
@@ -75,21 +77,38 @@ function handleMovement(dt)
     CameraPosition = vector_add(CameraPosition, movement)
 end
 
-function handlePainting(dt)
-    if isMouseDown(1) or isMouseDown(2) then
-        local paintPosition = vector.add(CameraPosition, vector.mul(CameraLookDirection, 4.0))
-        paintPosition = vector.add(paintPosition, vector3(0.5, 0.5, 0.5))
+function handlePainting()
+    local paintPoint = nil
 
-        local radius = 1.25
-        for x = -radius, radius do 
-            for y = -radius, radius do 
-                for z = -radius, radius do 
-                    local dist = math.sqrt(x * x + y * y + z * z)
-                    if (isMouseDown(1)) then 
-                        world.setPointValue(paintPosition.X + x, paintPosition.Y + y, paintPosition.Z + z, math.min((radius - dist) * -40.0 * dt, 0.0))
-                    else
-                        world.setPointValue(paintPosition.X + x, paintPosition.Y + y, paintPosition.Z + z, math.max((radius - dist) * 40.0 * dt, 0.0))
-                    end
+    local origin = CameraPosition
+        
+    local increment = 0.5
+    local range = 8.0
+
+    local vectorIncrement = vector.mul(CameraLookDirection, increment)
+
+    for i = 0.0, range, increment do
+        local gridPos = vector.round(origin)
+
+        origin = vector.add(origin, vectorIncrement)
+
+        if world.getPointValue(gridPos.X, gridPos.Y, gridPos.Z) < SurfaceLevel then
+            paintPoint = origin
+            break
+        end
+    end
+
+    if paintPoint == nil then return end
+
+    local radius = 1.3
+    for x = -radius, radius do 
+        for y = -radius, radius do 
+            for z = -radius, radius do 
+                local dist = math.sqrt(x * x + y * y + z * z)
+                if (isMouseDown(1)) then 
+                    world.setPointValue(paintPoint.X + x, paintPoint.Y + y, paintPoint.Z + z, math.max((radius - dist) * 0.75, 0.0))
+                else
+                    world.setPointValue(paintPoint.X + x, paintPoint.Y + y, paintPoint.Z + z, math.min((radius - dist) * -0.75, 0.0))
                 end
             end
         end
