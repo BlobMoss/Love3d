@@ -1,5 +1,3 @@
---THIS WILL BE SPLIT UP INTO A CHUNK.LUA AS WELL
-
 --Math
 local vector = require "math/vector"
 
@@ -9,47 +7,6 @@ local marching_cubes = {}
 
 --Points with a value lesser than the surface value are considered to be inside the mesh
 SurfaceLevel = 8.0
-
-function marching_cubes.generatePoints(chunk)
-    local points = {}
-
-    for x = 0, ChunkWidth do 
-        points[x] = {}
-        for y = 0, Chunkheight do 
-            points[x][y] = {}
-            for z = 0, ChunkLength do 
-                local point = vector3(x + ChunkWidth * chunk.X, y, z + ChunkLength * chunk.Z)
-
-                point.W = generatePointValue(x + ChunkWidth * chunk.X, y, z + ChunkLength * chunk.Z)
-
-                points[x][y][z] = point
-            end
-        end
-    end
-
-    chunk.points = points
-end
-
-function generatePointValue(x, y, z)
-    --This is where the world generation happens!
-    if y == 0 then return 10.0 end
-    if y == Chunkheight then return 0.0 end
-    
-    local value = 0.0
-    value = value + noise(x, y, z, 0.01, 0.7) --General shape
-    value = value + noise(x, y, z, 0.15, 0.7) --Details
-    value = value * 18 - y * 0.5 --More mass further down
-    return value
-end
-
-function noise(x, y, z, frequency, amplitude)
-    --The noise sampling can be offset by a random number to generate a new world every time
-    return love.math.noise(
-        x * frequency + Seed, 
-        y * frequency, 
-        z * frequency
-    ) * amplitude
-end
 
 function marching_cubes.generateTriangles(chunk)
     triangles = {}

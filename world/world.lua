@@ -1,14 +1,15 @@
 --Modules
 local graphics = require "graphics"
+
 local marching_cubes = require "world/marching_cubes"
+local chunk = require "world/chunk"
+local generation = require "world/generation"
 
 local world = {}
 
 WorldWidth, WorldLength = 256, 256
 
 Chunks = {}
-
-ChunkWidth, Chunkheight, ChunkLength = 8, 32, 8
 
 local renderedChunks = {}
 
@@ -55,16 +56,18 @@ function world.update()
 end
 
 function newChunk(x, z)
-    local chunk = {} 
-    chunk.X = x
-    chunk.Z = z
-    marching_cubes.generatePoints(chunk)
-    chunk.updateNeeded = true
+    local c = {} 
+    c.X = x
+    c.Z = z
+    chunk.generatePoints(c)
+    c.updateNeeded = true
     updateNeighbors(x, z)
-    return chunk
+    return c
 end
 
-function world.setPointValue(x, y, z, w)
+function world.addPointValue(x, y, z, w)
+    if y < 0 or y > Chunkheight then return end
+
     chunkX, chunkZ = floor(x / ChunkWidth), floor(z / ChunkLength)
     pointX, pointY, pointZ = floor(x % ChunkWidth), floor(y), floor(z % ChunkLength)
     local chunk = Chunks[chunkX][chunkZ]
@@ -77,6 +80,8 @@ function world.setPointValue(x, y, z, w)
 end
 
 function world.getPointValue(x, y, z)
+    if y < 0 or y > Chunkheight then return 0.0 end
+
     chunkX, chunkZ = floor(x / ChunkWidth), floor(z / ChunkLength)
     pointX, pointY, pointZ = floor(x % ChunkWidth), floor(y), floor(z % ChunkLength)
     local chunk = Chunks[chunkX][chunkZ]

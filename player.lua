@@ -1,6 +1,5 @@
 --Math
 local vector = require "math/vector"
-local matrix = require "math/matrix"
 
 local world = require "world/world"
 
@@ -12,20 +11,24 @@ local vector_sub = vector.sub
 local isKeyDown = love.keyboard.isDown
 local isMouseDown = love.mouse.isDown
 
-local speed = 3.0
-local mouseSensitivity = 0.002
-
 local up = vector3(0.0, 1.0, 0.0)
 
-function player.load()
-    
-end
+--Camera movement settings
+local speed = 4.0
+local mouseSensitivity = 0.002
+
+--Brush settings
+local brushRange = 12.0
+local brushRadius = 2.0
+local maxBrushRadius = 6.0
+local minBrushRadius = 1.5
+local brushOpacity = 5.0
 
 function player.update(dt)
     handleMovement(dt)
 
     if isMouseDown(1) or isMouseDown(2) then
-        handlePainting()
+        handlePainting(dt)
     end
 end
 
@@ -70,49 +73,67 @@ function handleMovement(dt)
         movement = vector_add(movement, up)
     end
 
-    if movement.X ~= 0.0 and movement.Y ~= 0.0 and movement.Z ~= 0.0 then
+    if vector.length(movement) > 0.0 then
         movement = vector.normalize(movement)
     end
+    
     movement = vector.mul(movement, speed * dt)
+    
     CameraPosition = vector_add(CameraPosition, movement)
 end
 
-function handlePainting()
-    local paintPoint = nil
+function handlePainting(dt)
+    local paintPoint = findPaintPoint()
 
+    if paintPoint == nil then return end
+
+    for x = -brushRadius, brushRadius do 
+        for y = -brushRadius, brushRadius do 
+            for z = -brushRadius, brushRadius do 
+                local dist = math.sqrt(x * x + y * y + z * z)
+
+                local value = math.min((brushRadius - dist) * -brushOpacity / brushRadius * dt, 0.0)
+                if isMouseDown(1) then 
+                    value = math.max((brushRadius - dist) * brushOpacity / brushRadius * dt, 0.0) 
+                end
+
+                world.addPointValue(paintPoint.X + x, paintPoint.Y + y, paintPoint.Z + z, value)
+            end
+        end
+    end
+end
+
+function findPaintPoint()
     local origin = CameraPosition
         
     local increment = 0.5
-    local range = 8.0
 
     local vectorIncrement = vector.mul(CameraLookDirection, increment)
 
-    for i = 0.0, range, increment do
+    for i = 0.0, brushRange, increment do
         local gridPos = vector.round(origin)
 
         origin = vector.add(origin, vectorIncrement)
 
         if world.getPointValue(gridPos.X, gridPos.Y, gridPos.Z) < SurfaceLevel then
-            paintPoint = origin
-            break
-        end
-    end
-
-    if paintPoint == nil then return end
-
-    local radius = 1.3
-    for x = -radius, radius do 
-        for y = -radius, radius do 
-            for z = -radius, radius do 
-                local dist = math.sqrt(x * x + y * y + z * z)
-                if (isMouseDown(1)) then 
-                    world.setPointValue(paintPoint.X + x, paintPoint.Y + y, paintPoint.Z + z, math.max((radius - dist) * 0.75, 0.0))
-                else
-                    world.setPointValue(paintPoint.X + x, paintPoint.Y + y, paintPoint.Z + z, math.min((radius - dist) * -0.75, 0.0))
-                end
+            if isMouseDown(2) then 
+                origin = vector.sub(origin, vector.mul(CameraLookDirection, brushRadius * 0.5))
             end
+
+            return origin
         end
     end
+
+    return 
+end
+
+function love.wheelmoved(x, y)
+    if y < 0.0 then
+        brushRadius = math.min(brushRadius + 0.2, maxBrushRadius)
+    elseif y > 0.0 then
+        brushRadius = math.max(brushRadius - 0.2, minBrushRadius)
+    end
+    print(brushRadius)
 end
 
 return player
