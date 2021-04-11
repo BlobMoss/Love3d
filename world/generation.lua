@@ -40,7 +40,6 @@ local interval2 = 0.35
 local interval3 = 0.45
 local interval4 = 0.55
 
-local up = vector3(0.0, 1.0, 0.0)
 function generation.generateTriangleColor(t)
     local avg = triangle.centre(t)
 
@@ -50,6 +49,7 @@ function generation.generateTriangleColor(t)
         return vector3(0.3, 0.4 + noise(avg.X, avg.Y, avg.Z, 0.3, 0.3), 0.6)
     end
 
+    --Lerp between every color using the height of the triangles centre
     local p = 1.0 - avg.Y / Chunkheight
 
     if p < interval1 then
@@ -73,7 +73,9 @@ end
 local treeColor  = vector3(0.30, 0.4, 0.20)
 local trunkColor = vector3(0.40, 0.30, 0.20)
 
-function generation.generateVegetation(t, triangles)
+local up = vector3(0.0, 1.0, 0.0)
+
+function generation.generateMeshes(t, triangles)
     local avg = triangle.centre(t)
 
     local p = 1.0 - avg.Y / Chunkheight
@@ -85,7 +87,8 @@ function generation.generateVegetation(t, triangles)
         local normal = vector.cross(lineA, lineB)
         normal = vector.normalize(normal)
     
-        local flatness = -vector.dot(normal, vector3(0.0, 1.0, 0.0))
+        --The "flatness" of a triangle can be expressed as the dot between the normal and up direction
+        local flatness = -vector.dot(normal, up)
     
         if flatness > 0.85 and 0.3 > noise(avg.X, avg.Y, avg.Z, 1.0, 1.0) then
             local treeTriangles = content.loadModel("models/tree.obj")
@@ -94,6 +97,7 @@ function generation.generateVegetation(t, triangles)
                 local tt = treeTriangles[ii]
                 local tavg = triangle.centre(tt)
                 
+                --Color the lower half of the mesh brown
                 if tavg.Y < -1.9 then 
                     tt.color = treeColor
                 else

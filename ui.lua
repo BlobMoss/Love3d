@@ -2,14 +2,35 @@ local player = require "player"
 
 local ui = {}
 
-local brushScale = 60.0
+local title
+local background
+local pressSpace
+local pressSpaceYOffset = 0.0 
+local t = 0.0
+
+function ui.load()
+    title = love.graphics.newImage("images/title.png")
+    background = love.graphics.newImage("images/title_background.png")
+    pressSpace = love.graphics.newImage("images/press_space_to_start.png")
+end
+
+function ui.drawMenu()
+    love.graphics.draw(background)
+    love.graphics.draw(title, (WindowWidth - title:getWidth()) * 0.5, (WindowHeight - title:getHeight()) * 0.5 - 200)
+    love.graphics.draw(pressSpace, (WindowWidth - pressSpace:getWidth()) * 0.5, (WindowHeight - pressSpace:getHeight()) * 0.5 - pressSpaceYOffset)
+end
+
+function ui.update(dt)
+    t = t + dt
+    pressSpaceYOffset = math.sin(t * 3.0) * 10.0
+end
 
 function ui.draw()
     drawCursor()
 
     drawBrushSize()
 
-    drawFps()
+    --drawFps()
 end
 
 function drawCursor()
@@ -20,11 +41,11 @@ end
 
 function drawBrushSize()
     LG.setColor(0.0, 0.0, 0.0, 0.25)
-    LG.circle("fill", 75, WindowHeight - 75, brushScale)
+    LG.circle("fill", 75, WindowHeight - 75, 60.0)
     LG.setColor(1.0, 1.0, 1.0, 0.75)
-    LG.circle("line", 75, WindowHeight - 75, brushScale)
+    LG.circle("line", 75, WindowHeight - 75, 60.0)
     local fraction = (BrushRadius - MinBrushRadius) / (MaxBrushRadius - MinBrushRadius)
-    LG.circle("fill", 75, WindowHeight - 75, brushScale * 0.2 + brushScale * 0.8 * fraction)
+    LG.circle("fill", 75, WindowHeight - 75, 60.0 * 0.2 + 60.0 * 0.8 * fraction)
 end
 
 function drawFps()

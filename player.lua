@@ -98,15 +98,20 @@ function handleMovement(dt)
     CameraPosition = vector.add(CameraPosition, vector_mul(velocity, dt))
 end
 
+--The simpleste form of triangle to sphere collision
 function handleCollision(dt)
     local chunk = Chunks[math.floor(CameraPosition.X / ChunkWidth)][math.floor(CameraPosition.Z / ChunkLength)]
+
     if chunk.triangles == nil then return end
+
     for i = 1, #chunk.triangles do
         local t = chunk.triangles[i]
 
         for ii = 1, 3 do
             local v = t[ii]
             local dist = vector.distance(CameraPosition, v)
+
+            --If player is too close to a vertex, add velocity in the direction of the triangle's normal
             if dist < colliderRadius then
                 local lineA = vector_sub(t[2], t[1])
                 local lineB = vector_sub(t[3], t[1])
@@ -115,6 +120,7 @@ function handleCollision(dt)
                 normal = vector.normalize(normal)
 
                 velocity = vector_add(velocity, vector_mul(normal, speed * dt))
+                --Return to only allow one collision between every camera movement
                 return
             end
         end
@@ -154,6 +160,7 @@ function findPaintPoint()
     for i = 0.0, brushRange, increment do
         local gridPos = vector.round(origin)
 
+        --Step in the direction of the camera
         origin = vector_add(origin, vectorIncrement)
 
         if world.getPointValue(gridPos.X, gridPos.Y, gridPos.Z) < SurfaceLevel then
@@ -165,7 +172,6 @@ function findPaintPoint()
             return origin
         end
     end
-
     return 
 end
 

@@ -33,9 +33,10 @@ function marching_cubes.generateTriangles(chunk)
         end
     end
     
+    --Generate mesh triangles and add them to a seperate table to not collide with
     local meshTriangles = {}
     for i = 1, #triangles do
-        generation.generateVegetation(triangles[i], meshTriangles)
+        generation.generateMeshes(triangles[i], meshTriangles)
     end
 
     chunk.meshTriangles = meshTriangles

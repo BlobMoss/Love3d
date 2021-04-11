@@ -11,7 +11,11 @@ Löve3D is a proof of concept exploring the third dimension and the marching cub
 
 * Terrain editing
 
+* Very simple triangle-sphere collision detection
+
 * An .obj file loader
+
+* Trees
 
 ## Controls:
 
@@ -36,13 +40,3 @@ SCROLL WHEEL - increase or decrease brush size.
 ESCAPE - to close the program.
 
 <br>
-
-## Marching cubes:
-
-<br>
-
-
-
-
-
---here i will likely write a short discription of the algorithm

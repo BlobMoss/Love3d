@@ -32,7 +32,17 @@ CameraLookDirection = vector.newIdentity()
 CameraRotY = 0.0
 CameraRotX = 0.0
 
+--0: title
+--1: playing
+local gameState = 0
+
+local started = false
+
 function love.load()
+    ui.load()
+end
+
+function start()
     love.mouse.setVisible(false)
     love.mouse.setPosition(WindowCentreX, WindowCentreY)
 
@@ -49,18 +59,37 @@ function love.update(dt)
     if love.keyboard.isDown("escape") then
         love.event.quit() 
     end
+    if love.keyboard.isDown("space") then
+        gameState = 1 
+    end
 
-    world.update()
+    if started == false and gameState == 1 then
+        start()
+        started = true
+        gameState = 1
+    end
 
-    player.update(dt)
+    if gameState == 1 then 
+        world.update()
 
-    graphics.update(dt)
+        player.update(dt)
+    
+        graphics.update(dt)
+    end
+
+    ui.update(dt)
 end
 
 function love.draw(dt)
-    world.drawChunks()
+    if gameState == 0 then 
+        ui.drawMenu()
+    end
 
-    graphics.draw()
+    if gameState == 1 then 
+        world.drawChunks()
 
-    ui.draw()
+        graphics.draw()
+    
+        ui.draw()
+    end
 end
