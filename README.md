@@ -1,7 +1,19 @@
 # löve3D
 Löve3D is a proof of concept exploring the third dimension and the marching cubes algorithm!
 
-## Controls 
+## Features:
+
+* An interactive implementation of the marching cubes algorithm
+
+* An infinite world
+
+* Terrain generation with caves and overhangs
+
+* Terrain editing
+
+* An .obj file loader
+
+## Controls:
 
 <br>
 
@@ -25,15 +37,11 @@ ESCAPE - to close the program.
 
 <br>
 
-## Some interesting concepts
+## Marching cubes:
 
 <br>
 
-### Marching cubes:
 
-<br>
-
-[![](https://img.youtube.com/vi/M3iI2l0ltbE/0.jpg)](https://www.youtube.com/watch?v=M3iI2l0ltbE)
 
 
 

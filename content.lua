@@ -36,7 +36,7 @@ function content.loadModel(path)
                 vertices[face[1]],
                 vertices[face[2]],
                 vertices[face[3]],
-                color = vector3(0.2, 0.3, 0.6)
+                color = vector3(1.0, 1.0, 1.0)
             }
             
             table.insert(o, triangle)

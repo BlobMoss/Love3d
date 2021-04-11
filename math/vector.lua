@@ -72,6 +72,18 @@ function vector.cross(v1, v2)
     return o
 end
 
+function vector.distance(v1, v2)
+    local dx = v1.X - v2.X
+    local dy = v1.Y - v2.Y
+    local dz = v1.Z - v2.Z
+    return math.sqrt(dx * dx + dy * dy + dz * dz)
+end
+
+--Linear interpolation between two vectors
+function vector.lerp(v1, v2, p)
+    return vector.add(vector.mul(v1, p), vector.mul(v2, 1.0 - p))
+end
+
 --Vector by matrix multiplication
 function vector.mulMatrix(v, m)
     local o = newIdentity()

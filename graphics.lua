@@ -61,11 +61,7 @@ function graphics.update(dt)
     viewMat = matrix.simpleInverse(cameraMat)
 end
 
-function graphics.drawMesh(mesh)
-    drawTriangles(mesh.triangles)
-end
-
-function drawTriangles(triangles)
+function graphics.drawTriangles(triangles)
     for i = 1, #triangles do 
         local tTransformed = copyTriangle(triangles[i])
         tTransformed[1] = vector_mulMatrix(tTransformed[1], worldMat)
@@ -118,7 +114,7 @@ function drawTriangles(triangles)
                 tProjected[2] = vector_div(tProjected[2], tProjected[2].W)
                 tProjected[3] = vector_div(tProjected[3], tProjected[3].W)
 
-                --Center triangle on screen
+                --Position triangle on screen
                 tProjected[1] = vector_add(tProjected[1], screenOffset)
                 tProjected[2] = vector_add(tProjected[2], screenOffset)
                 tProjected[3] = vector_add(tProjected[3], screenOffset)

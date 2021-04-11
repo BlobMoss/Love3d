@@ -13,6 +13,14 @@ function copyTriangle(t)
     }
 end
 
+function triangle.centre(t)
+    return vector3(
+        (t[1].X + t[2].X + t[3].X) / 3, 
+        (t[1].Y + t[2].Y + t[3].Y) / 3,
+        (t[1].Z + t[2].Z + t[3].Z) / 3
+    )
+end
+
 local insert = table.insert
 local intersectPlane = vector.intersectPlane
 

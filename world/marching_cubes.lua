@@ -3,6 +3,8 @@ local vector = require "math/vector"
 
 local tri_table = require "tri_table"
 
+local generation = require "world/generation"
+
 local marching_cubes = {}
 
 --Points with a value lesser than the surface value are considered to be inside the mesh
@@ -16,12 +18,14 @@ function marching_cubes.generateTriangles(chunk)
     for x = 0, ChunkWidth do 
         for y = 0, Chunkheight - 1 do 
             for z = 0, ChunkLength do 
+                --The edges of neighboring chunks are included to create smooth transitions
                 if x == ChunkWidth and Chunks[chunk.X + 1][chunk.Z] ~= nil then
                     points[x][y][z] = Chunks[chunk.X + 1][chunk.Z].points[0][y][z]
                 end
                 if z == ChunkLength and Chunks[chunk.X][chunk.Z + 1] ~= nil then
                     points[x][y][z] = Chunks[chunk.X][chunk.Z + 1].points[x][y][0]
                 end
+                --These edge points should however not be marched
                 if x ~= ChunkWidth and z ~= ChunkLength then 
                     march(x, y, z)
                 end
@@ -29,6 +33,17 @@ function marching_cubes.generateTriangles(chunk)
         end
     end
     
+    local meshTriangles = {}
+    for i = 1, #triangles do
+        generation.generateVegetation(triangles[i], meshTriangles)
+    end
+
+    chunk.meshTriangles = meshTriangles
+
+    for i = 1, #triangles do
+        triangles[i].color = generation.generateTriangleColor(triangles[i])
+    end
+
     chunk.triangles = triangles
 end
 
@@ -42,7 +57,7 @@ function march(x, y, z)
         points[x    ][y + 1][z    ],
         points[x + 1][y + 1][z    ],
         points[x + 1][y + 1][z + 1],
-        points[x    ][y + 1][z + 1],
+        points[x    ][y + 1][z + 1]
     }
 
     --Generate 8 bit number (cubeIndex) based on which nodes have a value below the surface level
@@ -70,7 +85,6 @@ function march(x, y, z)
             interpolateVerts(cubeCorners[a1], cubeCorners[b1]),
             interpolateVerts(cubeCorners[a2], cubeCorners[b2]),
             interpolateVerts(cubeCorners[a3], cubeCorners[b3]),
-            color = vector3(y / Chunkheight, 0.3, 0.3)
         }
         table.insert(triangles, triangle)
     end

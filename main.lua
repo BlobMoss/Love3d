@@ -6,9 +6,9 @@ local triangle = require "math/triangle"
 --Modules
 local graphics = require "graphics"
 local world = require "world/world"
-local marching_cubes = require "world/marching_cubes"
 local player = require "player"
 local content = require "content"
+local ui = require "ui"
 
 LG = love.graphics
 
@@ -19,7 +19,7 @@ WindowHeight = LG.getHeight()
 WindowCentreX = WindowWidth * 0.5
 WindowCentreY = WindowHeight * 0.5
 
-BackgroundColor = vector3(0.15, 0.15, 0.175)
+BackgroundColor = vector3(0.20, 0.35, 0.40)
 FogDistance = 10.0
 
 --This is the value to decrease if you need more performance
@@ -32,17 +32,15 @@ CameraLookDirection = vector.newIdentity()
 CameraRotY = 0.0
 CameraRotX = 0.0
 
---local anchorMesh = {}
-
 function love.load()
     love.mouse.setVisible(false)
     love.mouse.setPosition(WindowCentreX, WindowCentreY)
 
     LG.setBackgroundColor(BackgroundColor.X, BackgroundColor.Y, BackgroundColor.Z)
  
-    --anchorMesh.triangles = content.loadModel("models/anchor.obj")
-    
     world.load()
+
+    player.load()
 
     graphics.load()
 end
@@ -52,9 +50,9 @@ function love.update(dt)
         love.event.quit() 
     end
 
-    player.update(dt)
-
     world.update()
+
+    player.update(dt)
 
     graphics.update(dt)
 end
@@ -64,6 +62,5 @@ function love.draw(dt)
 
     graphics.draw()
 
-    LG.setColor(1.0, 1.0, 1.0)
-    LG.print("Fps: " .. tostring(love.timer.getFPS()), 10, 10)
+    ui.draw()
 end
