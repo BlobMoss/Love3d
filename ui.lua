@@ -4,20 +4,32 @@ local ui = {}
 
 local title
 local background
+local plantSeed
+
+local input = ""
+
 local pressSpace
 local pressSpaceYOffset = 0.0 
 local t = 0.0
 
 function ui.load()
-    title = love.graphics.newImage("images/title.png")
-    background = love.graphics.newImage("images/title_background.png")
-    pressSpace = love.graphics.newImage("images/press_space_to_start.png")
+    LG.setDefaultFilter("nearest", "nearest") 
+    title = LG.newImage("images/title.png")
+    background = LG.newImage("images/title_background.png")
+    pressSpace = LG.newImage("images/press_space_to_start.png")
+    plantSeed = LG.newImage("images/plant_seed.png")
 end
 
 function ui.drawMenu()
-    love.graphics.draw(background)
-    love.graphics.draw(title, (WindowWidth - title:getWidth()) * 0.5, (WindowHeight - title:getHeight()) * 0.5 - 200)
-    love.graphics.draw(pressSpace, (WindowWidth - pressSpace:getWidth()) * 0.5, (WindowHeight - pressSpace:getHeight()) * 0.5 - pressSpaceYOffset)
+    LG.setColor(1.0, 1.0, 1.0, 1.0)
+    LG.draw(background)
+    LG.draw(title, (WindowWidth - title:getWidth()) * 0.5, (WindowHeight - title:getHeight()) * 0.5 - 200)
+    LG.draw(pressSpace, (WindowWidth - pressSpace:getWidth()) * 0.5, (WindowHeight - pressSpace:getHeight()) * 0.5 - pressSpaceYOffset)
+
+    LG.draw(plantSeed, (WindowWidth - plantSeed:getWidth()) * 0.5, (WindowHeight - plantSeed:getHeight()) * 0.5 + 150)
+
+    LG.setColor(239 / 256, 172 / 256, 40 / 256, 1.0)
+    LG.print(input, (WindowWidth - plantSeed:getWidth()) * 0.5, (WindowHeight - plantSeed:getHeight()) * 0.5 + 250, 0.0, 2.0, 2.0)
 end
 
 function ui.update(dt)
@@ -30,7 +42,11 @@ function ui.draw()
 
     drawBrushSize()
 
-    --drawFps()
+    drawFps()
+end
+
+function love.keypressed(key)
+    if key and key:match( '^[%w%s]$' ) then input = input..key end
 end
 
 function drawCursor()

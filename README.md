@@ -1,4 +1,6 @@
-# löve3D
+![Screenshot](images/title.png)
+
+# What is love3D?
 Löve3D is a proof of concept exploring the third dimension and the marching cubes algorithm!
 
 ## Features:

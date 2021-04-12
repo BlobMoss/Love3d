@@ -20,7 +20,7 @@ local colliderRadius = 1.0
 --Camera movement settings
 local speed = 21.0
 local mouseSensitivity = 0.002
-local scrollSensitivity = 0.3
+local scrollSensitivity = 0.4
 
 --Brush settings
 BrushRadius = 2.0
