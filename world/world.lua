@@ -18,8 +18,12 @@ function world.load()
     Seed = love.math.random() * 1000000.0
 
     --Initialize chunk grid with the center at [0, 0], the one benefit of lua!
+    Chunks = {}
     for x = -WorldWidth / 2, WorldWidth / 2 do 
         Chunks[x] = {}
+        for z = -WorldLength / 2, WorldLength / 2 do 
+            Chunks[x][z] = nil
+        end
     end
 end
 
@@ -63,7 +67,7 @@ function world.update()
     end
     for i = 1, #storedChunks do
         if storedChunks[i].willUnload == true then 
-            storedChunks[i].triangles = {}
+            storedChunks[i].triangles = nil
             storedChunks[i].updateNeeded = true
         end
     end

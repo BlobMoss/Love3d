@@ -30,7 +30,10 @@ local brushRange = 12.0
 local brushOpacity = 5.0
 
 function player.load()
+    velocity = vector3(0.0, 0.0, 0.0)
+    CameraPosition.X = 0.0
     CameraPosition.Y = Chunkheight / 2.0
+    CameraPosition.Z = 0.0
 end
 
 function player.update(dt)

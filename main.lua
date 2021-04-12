@@ -34,19 +34,22 @@ CameraRotX = 0.0
 
 --0: title
 --1: playing
-local gameState = 0
+--2: controls
+Gamestate = 0
 
-local started = false
+--To prevent chaining presses from closing the game
+local escPressed = false
 
 function love.load()
+    LG.setBackgroundColor(BackgroundColor.X, BackgroundColor.Y, BackgroundColor.Z)
+
     ui.load()
 end
 
 function start()
-    love.mouse.setVisible(false)
-    love.mouse.setPosition(WindowCentreX, WindowCentreY)
+    Gamestate = 1
 
-    LG.setBackgroundColor(BackgroundColor.X, BackgroundColor.Y, BackgroundColor.Z)
+    love.mouse.setPosition(WindowCentreX, WindowCentreY)
  
     world.load()
 
@@ -56,40 +59,56 @@ function start()
 end
 
 function love.update(dt)
-    if love.keyboard.isDown("escape") then
-        love.event.quit() 
-    end
-    if love.keyboard.isDown("space") then
-        gameState = 1 
-    end
+    if Gamestate == 0 then 
+        if love.keyboard.isDown("escape") and escPressed == false then
+            love.event.quit() 
+        end
+        if love.keyboard.isDown("space") then
+            start()
+        end
+        if love.keyboard.isDown("c") then
+            Gamestate = 2
+        end
 
-    if started == false and gameState == 1 then
-        start()
-        started = true
-        gameState = 1
-    end
+        love.mouse.setVisible(true)
 
-    if gameState == 1 then 
+    elseif Gamestate == 1 then 
+        
+        if love.keyboard.isDown("escape") and escPressed == false then
+            escPressed = true
+            Gamestate = 0
+        end
+
+        love.mouse.setVisible(false)
+
         world.update()
 
         player.update(dt)
     
         graphics.update(dt)
+
+    elseif Gamestate == 2 then 
+        if love.keyboard.isDown("escape") and escPressed == false then
+            escPressed = true
+            Gamestate = 0
+        end
+
+        love.mouse.setVisible(true)
+    end
+
+    if love.keyboard.isDown("escape") == false then
+        escPressed = false
     end
 
     ui.update(dt)
 end
 
 function love.draw(dt)
-    if gameState == 0 then 
-        ui.drawMenu()
-    end
-
-    if gameState == 1 then 
+    if Gamestate == 1 then 
         world.drawChunks()
 
         graphics.draw()
-    
-        ui.draw()
     end
+
+    ui.draw()
 end

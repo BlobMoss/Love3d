@@ -3,21 +3,26 @@ local player = require "player"
 local ui = {}
 
 local title
+
 local background
+
 local pressSpace
 local pressSpaceYOffset = 0.0 
 local t = 0.0
 
-function ui.load()
-    title = love.graphics.newImage("images/title.png")
-    background = love.graphics.newImage("images/title_background.png")
-    pressSpace = love.graphics.newImage("images/press_space_to_start.png")
-end
+local escQuit
 
-function ui.drawMenu()
-    love.graphics.draw(background)
-    love.graphics.draw(title, (WindowWidth - title:getWidth()) * 0.5, (WindowHeight - title:getHeight()) * 0.5 - 200)
-    love.graphics.draw(pressSpace, (WindowWidth - pressSpace:getWidth()) * 0.5, (WindowHeight - pressSpace:getHeight()) * 0.5 - pressSpaceYOffset)
+function ui.load()
+    --Title screen components
+    title = LG.newImage("images/title.png")
+    background = LG.newImage("images/title_background.png")
+    pressSpace = LG.newImage("images/press_space_to_start.png")
+    escQuit = LG.newImage("images/quit.png")
+
+    --Control screen components
+    controlsBackground = LG.newImage("images/controls_background.png")
+    controls = LG.newImage("images/controls.png")
+    escBack = LG.newImage("images/back.png")
 end
 
 function ui.update(dt)
@@ -26,11 +31,34 @@ function ui.update(dt)
 end
 
 function ui.draw()
-    drawCursor()
+    if Gamestate == 0 then
+        drawMenu()
 
-    drawBrushSize()
+    elseif Gamestate == 1 then
+        drawCursor()
 
-    --drawFps()
+        drawBrushSize()
+
+        --drawFps()
+
+    elseif Gamestate == 2 then
+        drawControls()
+    end
+end
+
+function drawMenu()
+    LG.setColor(1.0, 1.0, 1.0, 1.0)
+    LG.draw(background)
+    LG.draw(title, (WindowWidth - title:getWidth()) * 0.5, (WindowHeight - title:getHeight()) * 0.5 - 200)
+    LG.draw(pressSpace, (WindowWidth - pressSpace:getWidth()) * 0.5, (WindowHeight - pressSpace:getHeight()) * 0.5 - pressSpaceYOffset)
+    LG.draw(escQuit, 0, WindowHeight - escQuit:getHeight())
+end
+
+function drawControls()
+    LG.setColor(1.0, 1.0, 1.0, 1.0)
+    LG.draw(controlsBackground)
+    LG.draw(controls)
+    LG.draw(escBack, 0, WindowHeight - escBack:getHeight())
 end
 
 function drawCursor()
